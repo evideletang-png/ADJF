@@ -41,118 +41,24 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
 });
 
 const today = new Date("2026-07-06T09:00:00");
+const STORAGE_VERSION = "empty-production-v1";
 
-const defaultClients = [
-  {
-    id: "camille-nora-rousseau",
-    name: "Camille & Nora Rousseau",
-    email: "camille.rousseau@email.fr",
-    phone: "06 42 18 73 90",
-    profile: "Mariage"
-  },
-  {
-    id: "maison-bleue",
-    name: "Maison Bleue",
-    email: "compta@maisonbleue.fr",
-    phone: "01 43 22 91 10",
-    profile: "Entreprise"
-  },
-  {
-    id: "hotel-belle-rive",
-    name: "Hôtel Belle Rive",
-    email: "reception@bellerive.fr",
-    phone: "04 93 11 28 40",
-    profile: "Entreprise"
-  },
-  {
-    id: "atelier-margot",
-    name: "Atelier Margot",
-    email: "hello@ateliermargot.fr",
-    phone: "06 83 54 21 08",
-    profile: "Événementiel"
-  },
-  {
-    id: "cabinet-verdier",
-    name: "Cabinet Verdier",
-    email: "assistante@verdier.fr",
-    phone: "01 58 45 20 44",
-    profile: "Entreprise"
-  },
-  {
-    id: "julie-moreau",
-    name: "Julie Moreau",
-    email: "julie.moreau@email.fr",
-    phone: "06 19 32 54 78",
-    profile: "Particulier"
-  }
-];
+resetLegacyDemoData();
 
-const defaultOrders = [
-  {
-    id: "mariage-rousseau",
-    clientId: "camille-nora-rousseau",
-    client: "Camille & Nora Rousseau",
-    type: "Mariage",
-    amount: 1840,
-    dueDate: "2026-07-08",
-    eventDate: "2026-07-18",
-    status: "deposit",
-    contact: "camille.rousseau@email.fr",
-    relances: 0
-  },
-  {
-    id: "maison-bleue",
-    clientId: "maison-bleue",
-    client: "Maison Bleue",
-    type: "Entreprise",
-    amount: 620,
-    dueDate: "2026-07-06",
-    eventDate: "2026-07-05",
-    status: "invoice",
-    contact: "compta@maisonbleue.fr",
-    relances: 0
-  },
-  {
-    id: "hotel-belle-rive",
-    clientId: "hotel-belle-rive",
-    client: "Hôtel Belle Rive",
-    type: "Abonnement floral",
-    amount: 980,
-    dueDate: "2026-06-30",
-    eventDate: "2026-06-28",
-    status: "late",
-    contact: "reception@bellerive.fr",
-    relances: 1
-  },
-  {
-    id: "atelier-margot",
-    clientId: "atelier-margot",
-    client: "Atelier Margot",
-    type: "Événement",
-    amount: 360,
-    dueDate: "2026-07-09",
-    eventDate: "2026-07-09",
-    status: "waiting",
-    contact: "hello@ateliermargot.fr",
-    relances: 0
-  },
-  {
-    id: "cabinet-verdier",
-    clientId: "cabinet-verdier",
-    client: "Cabinet Verdier",
-    type: "Entreprise",
-    amount: 240,
-    dueDate: "2026-07-03",
-    eventDate: "2026-07-01",
-    status: "paid",
-    contact: "assistante@verdier.fr",
-    relances: 0
-  }
-];
+const defaultClients = [];
+const defaultOrders = [];
 
 let clients = loadClients();
 let orders = loadOrders();
 let activeFilter = "all";
+
+function resetLegacyDemoData() {
+  if (localStorage.getItem("atelier-storage-version") === STORAGE_VERSION) return;
+
+  localStorage.removeItem("atelier-clients");
+  localStorage.removeItem("atelier-orders");
+  localStorage.setItem("atelier-storage-version", STORAGE_VERSION);
+}
 
 function loadClients() {
   const stored = localStorage.getItem("atelier-clients");
@@ -411,6 +317,11 @@ function renderClients() {
     };
   });
 
+  if (!clientStats.length) {
+    clientList.innerHTML = `<div class="empty-state">Aucun client pour le moment. Crée un client avant d'ajouter une commande.</div>`;
+    return;
+  }
+
   clientList.innerHTML = clientStats
     .sort((a, b) => b.open - a.open)
     .map((client) => `
@@ -440,6 +351,13 @@ function renderClients() {
 
 function renderClientOptions() {
   const selected = orderClientSelect.value;
+  orderClientSelect.disabled = clients.length === 0;
+
+  if (!clients.length) {
+    orderClientSelect.innerHTML = `<option value="">Crée d'abord un client</option>`;
+    return;
+  }
+
   orderClientSelect.innerHTML = clients
     .map((client) => `<option value="${escapeHtml(client.id)}">${escapeHtml(client.name)}</option>`)
     .join("");
@@ -524,6 +442,13 @@ function showToast(message) {
 }
 
 function openSheet(clientId = "") {
+  if (!clients.length) {
+    setView("clients");
+    openClientSheet();
+    showToast("Crée d'abord un client.");
+    return;
+  }
+
   orderSheet.classList.remove("is-hidden");
   const dateInput = orderForm.elements.date;
   dateInput.value = "2026-07-10";

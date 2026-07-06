@@ -9,6 +9,7 @@ Prototype web de suivi de facturation pour une fleuriste.
 - création de clients séparée des commandes
 - interface responsive mobile, tablette et ordinateur
 - emplacements prévus pour Gmail, modèles d'emails et documents PDF
+- base vide au démarrage pour saisir de vraies données
 
 ## Lancer localement
 
