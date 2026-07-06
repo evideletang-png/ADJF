@@ -45,12 +45,55 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
   month: "long"
 });
 
-const today = new Date("2026-07-06T09:00:00");
+const today = new Date();
+today.setHours(9, 0, 0, 0);
 const STORAGE_VERSION = "empty-production-v1";
 const DEFAULT_ADMIN_NAME = "Léana";
 const AUTH_USER_KEY = "atelier-auth-user";
 const AUTH_SALT_KEY = "atelier-auth-salt";
 const AUTH_HASH_KEY = "atelier-auth-password-hash";
+
+const WORKFLOWS = {
+  event_pre3: {
+    label: "Acompte signature + solde J-3",
+    shortLabel: "Solde J-3",
+    depositPercent: 30,
+    balanceOffsetDays: -3,
+    paymentOffsetDays: -3
+  },
+  event_post7: {
+    label: "Acompte signature + solde J+7",
+    shortLabel: "Solde J+7",
+    depositPercent: 30,
+    balanceOffsetDays: 0,
+    paymentOffsetDays: 7
+  },
+  monthly: {
+    label: "Facture mensuelle J+30",
+    shortLabel: "Mensuel J+30",
+    depositPercent: 0,
+    balanceOffsetDays: 0,
+    paymentOffsetDays: 30
+  },
+  immediate: {
+    label: "Paiement immédiat",
+    shortLabel: "Immédiat",
+    depositPercent: 0,
+    balanceOffsetDays: 0,
+    paymentOffsetDays: 0
+  }
+};
+
+const STATUS_PRIORITY = {
+  late: 0,
+  quote: 1,
+  signature: 2,
+  deposit: 3,
+  balance: 4,
+  invoice: 5,
+  waiting: 6,
+  paid: 7
+};
 
 resetLegacyDemoData();
 
@@ -83,7 +126,7 @@ function loadOrders() {
   const stored = localStorage.getItem("atelier-orders");
   if (!stored) return defaultOrders;
   try {
-    return JSON.parse(stored);
+    return JSON.parse(stored).map(normalizeOrder);
   } catch {
     return defaultOrders;
   }
@@ -113,6 +156,52 @@ function slugify(value) {
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+}
+
+function formatDateInput(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function addDays(dateValue, days) {
+  const date = parseDate(dateValue);
+  date.setDate(date.getDate() + days);
+  return formatDateInput(date);
+}
+
+function workflowForOrder(order) {
+  return WORKFLOWS[order.workflow] || WORKFLOWS.event_pre3;
+}
+
+function defaultWorkflowForType(type) {
+  if (type === "Abonnement entreprise") return "monthly";
+  if (type === "Commande boutique") return "immediate";
+  if (type === "Événement professionnel") return "event_post7";
+  return "event_pre3";
+}
+
+function normalizeStatus(status) {
+  if (STATUS_PRIORITY[status] === undefined) return "quote";
+  return status;
+}
+
+function normalizeOrder(order) {
+  const workflow = order.workflow || defaultWorkflowForType(order.type);
+  const workflowConfig = WORKFLOWS[workflow] || WORKFLOWS.event_pre3;
+  const eventDate = order.eventDate || order.dueDate || formatDateInput(today);
+
+  return {
+    ...order,
+    workflow,
+    eventDate,
+    quoteDate: order.quoteDate || order.createdDate || formatDateInput(today),
+    signedDate: order.signedDate || "",
+    depositPercent: Number(order.depositPercent ?? workflowConfig.depositPercent),
+    status: normalizeStatus(order.status),
+    relances: Number(order.relances || 0)
+  };
 }
 
 function clientForOrder(order) {
@@ -226,8 +315,11 @@ function lockApp() {
 
 function statusLabel(status) {
   return {
+    quote: "Devis à envoyer",
+    signature: "Signature attendue",
     deposit: "Acompte attendu",
-    invoice: "À facturer",
+    balance: "Solde à facturer",
+    invoice: "Facture à envoyer",
     waiting: "Paiement attendu",
     late: "En retard",
     paid: "Payé"
@@ -237,6 +329,7 @@ function statusLabel(status) {
 function statusClass(status) {
   if (status === "late") return "late";
   if (status === "paid") return "paid";
+  if (status === "quote" || status === "signature") return "quote";
   return "";
 }
 
@@ -249,8 +342,75 @@ function daysBetween(dateValue) {
   return Math.round(diff / 86400000);
 }
 
+function buildSchedule(order) {
+  const workflow = workflowForOrder(order);
+  const eventDate = order.eventDate || formatDateInput(today);
+  const quoteDate = order.quoteDate || formatDateInput(today);
+  const signatureDate = order.signedDate || quoteDate;
+  const balanceDueDate = addDays(eventDate, workflow.balanceOffsetDays);
+  const paymentDueDate = addDays(eventDate, workflow.paymentOffsetDays);
+  const depositAmount = Math.round(order.amount * (order.depositPercent || 0) / 100);
+  const balanceAmount = Math.max(order.amount - depositAmount, 0);
+
+  if (order.workflow === "immediate") {
+    return [
+      { key: "waiting", label: "Paiement à la livraison", dueDate: paymentDueDate, amount: order.amount },
+      { key: "paid", label: "Commande clôturée", dueDate: paymentDueDate, amount: 0 }
+    ];
+  }
+
+  if (order.workflow === "monthly") {
+    return [
+      { key: "invoice", label: "Facture mensuelle", dueDate: eventDate, amount: order.amount },
+      { key: "waiting", label: "Paiement attendu", dueDate: paymentDueDate, amount: order.amount },
+      { key: "late", label: "Relance si impayé", dueDate: addDays(paymentDueDate, 7), amount: order.amount }
+    ];
+  }
+
+  return [
+    { key: "quote", label: "Devis à envoyer", dueDate: quoteDate, amount: order.amount },
+    { key: "signature", label: "Signature du devis", dueDate: signatureDate, amount: 0 },
+    { key: "deposit", label: `Acompte ${order.depositPercent || 0}%`, dueDate: signatureDate, amount: depositAmount },
+    { key: "balance", label: "Solde à facturer", dueDate: balanceDueDate, amount: balanceAmount },
+    { key: "waiting", label: "Paiement du solde", dueDate: paymentDueDate, amount: balanceAmount },
+    { key: "late", label: "Relance si impayé", dueDate: addDays(paymentDueDate, 7), amount: balanceAmount }
+  ];
+}
+
+function currentMilestone(order) {
+  if (order.status === "paid") {
+    return { key: "paid", label: "Commande clôturée", dueDate: order.eventDate || formatDateInput(today), amount: 0 };
+  }
+
+  const schedule = buildSchedule(order);
+  return schedule.find((step) => step.key === order.status) || (order.status === "invoice" ? schedule.find((step) => step.key === "balance") : null) || schedule[0];
+}
+
+function currentAmount(order) {
+  return currentMilestone(order)?.amount ?? order.amount;
+}
+
+function payableAmount(order) {
+  if (order.status === "quote" || order.status === "signature" || order.status === "paid") return 0;
+  return currentAmount(order);
+}
+
+function displayAmount(order) {
+  return currentAmount(order) > 0 ? currentAmount(order) : order.amount;
+}
+
+function amountChipLabel(order) {
+  return currentAmount(order) > 0 ? `${euro.format(currentAmount(order))} à suivre` : `${euro.format(order.amount)} devis`;
+}
+
+function isOrderLate(order) {
+  return order.status !== "paid" && daysBetween(currentMilestone(order).dueDate) < 0;
+}
+
 function dueCopy(order) {
-  const days = daysBetween(order.dueDate);
+  if (order.status === "paid") return "Réglé";
+  const milestone = currentMilestone(order);
+  const days = daysBetween(milestone.dueDate);
   if (order.status === "paid") return "Réglé";
   if (days < 0) return `${Math.abs(days)} j de retard`;
   if (days === 0) return "Échéance aujourd'hui";
@@ -266,8 +426,9 @@ function actionableOrders() {
   return orders
     .filter((order) => order.status !== "paid")
     .sort((a, b) => {
-      const priority = { late: 0, invoice: 1, deposit: 2, waiting: 3 };
-      return priority[a.status] - priority[b.status] || parseDate(a.dueDate) - parseDate(b.dueDate);
+      const aMilestone = currentMilestone(a);
+      const bMilestone = currentMilestone(b);
+      return STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status] || parseDate(aMilestone.dueDate) - parseDate(bMilestone.dueDate);
     });
 }
 
@@ -284,10 +445,10 @@ function render() {
 function renderTotals() {
   const open = orders
     .filter((order) => order.status !== "paid")
-    .reduce((sum, order) => sum + order.amount, 0);
+    .reduce((sum, order) => sum + payableAmount(order), 0);
   const late = orders
-    .filter((order) => order.status === "late")
-    .reduce((sum, order) => sum + order.amount, 0);
+    .filter((order) => isOrderLate(order))
+    .reduce((sum, order) => sum + payableAmount(order), 0);
 
   totalOpen.textContent = euro.format(open);
   totalLate.textContent = euro.format(late);
@@ -295,9 +456,10 @@ function renderTotals() {
 
 function renderMetrics() {
   const metrics = [
-    ["À facturer", orders.filter((order) => order.status === "invoice").length],
+    ["Devis", orders.filter((order) => order.status === "quote" || order.status === "signature").length],
     ["Acomptes", orders.filter((order) => order.status === "deposit").length],
-    ["En retard", orders.filter((order) => order.status === "late").length]
+    ["Soldes", orders.filter((order) => order.status === "balance" || order.status === "invoice").length],
+    ["En retard", orders.filter((order) => isOrderLate(order)).length]
   ];
 
   metricGrid.innerHTML = metrics
@@ -321,25 +483,60 @@ function renderTasks() {
   taskList.innerHTML = tasks.map(taskCard).join("");
 }
 
+function primaryActionLabel(order) {
+  return {
+    quote: "Envoyer devis",
+    signature: "Marquer signé",
+    deposit: "Acompte reçu",
+    balance: "Facturer solde",
+    invoice: "Envoyer facture",
+    waiting: "Relancer",
+    late: "Relancer",
+    paid: "Payé"
+  }[order.status] || "Avancer";
+}
+
+function scheduleMarkup(order) {
+  const currentKey = order.status;
+  const steps = buildSchedule(order)
+    .filter((step) => step.key !== "late")
+    .slice(0, 5);
+
+  return `
+    <ol class="schedule-list" aria-label="Échéancier">
+      ${steps.map((step) => `
+        <li class="schedule-item ${step.key === currentKey ? "is-current" : ""}">
+          <span>${escapeHtml(step.label)}</span>
+          <strong>${dateFormatter.format(parseDate(step.dueDate))}</strong>
+        </li>
+      `).join("")}
+    </ol>
+  `;
+}
+
 function taskCard(order) {
-  const primary = order.status === "deposit" ? "Demander acompte" : order.status === "invoice" ? "Envoyer facture" : "Relancer";
-  const warning = order.status === "late" ? "warn" : "";
+  const primary = primaryActionLabel(order);
+  const warning = isOrderLate(order) ? "warn" : "";
   const client = clientForOrder(order);
+  const workflow = workflowForOrder(order);
+  const milestone = currentMilestone(order);
 
   return `
     <article class="task-card" data-id="${order.id}">
       <div class="card-topline">
         <div class="card-title">
           <h3>${escapeHtml(client.name)}</h3>
-          <p>${escapeHtml(order.type)} · ${eventCopy(order)}</p>
+          <p>${escapeHtml(order.type)} · ${escapeHtml(workflow.shortLabel)} · ${eventCopy(order)}</p>
         </div>
-        <span class="amount-pill">${euro.format(order.amount)}</span>
+        <span class="amount-pill">${euro.format(displayAmount(order))}</span>
       </div>
       <div class="task-meta">
-        <span class="status-pill ${statusClass(order.status)}">${statusLabel(order.status)}</span>
+        <span class="status-pill ${isOrderLate(order) ? "late" : statusClass(order.status)}">${statusLabel(order.status)}</span>
+        <span class="meta-chip">${escapeHtml(milestone.label)}</span>
         <span class="meta-chip">${dueCopy(order)}</span>
         <span class="meta-chip">${order.relances} relance${order.relances > 1 ? "s" : ""}</span>
       </div>
+      ${scheduleMarkup(order)}
       <div class="quick-actions">
         <button class="quick-action primary ${warning}" type="button" data-action="advance">${primary}</button>
         <button class="quick-action" type="button" data-action="remind">Message</button>
@@ -352,8 +549,8 @@ function taskCard(order) {
 function renderOrders() {
   const visible = orders.filter((order) => {
     if (activeFilter === "all") return true;
-    if (activeFilter === "invoice") return order.status === "invoice";
-    if (activeFilter === "late") return order.status === "late";
+    if (activeFilter === "invoice") return ["quote", "signature", "deposit", "balance", "invoice"].includes(order.status);
+    if (activeFilter === "late") return isOrderLate(order);
     if (activeFilter === "paid") return order.status === "paid";
     return true;
   });
@@ -368,23 +565,27 @@ function renderOrders() {
 
 function orderCard(order) {
   const client = clientForOrder(order);
+  const workflow = workflowForOrder(order);
+  const milestone = currentMilestone(order);
 
   return `
     <article class="order-card" data-id="${order.id}">
       <div class="order-topline">
         <div class="order-title">
           <h3>${escapeHtml(client.name)}</h3>
-          <p>${escapeHtml(order.type)} · ${escapeHtml(client.email || client.phone || "contact à ajouter")}</p>
+          <p>${escapeHtml(order.type)} · ${escapeHtml(workflow.label)}</p>
         </div>
-        <span class="status-pill ${statusClass(order.status)}">${statusLabel(order.status)}</span>
+        <span class="status-pill ${isOrderLate(order) ? "late" : statusClass(order.status)}">${statusLabel(order.status)}</span>
       </div>
       <div class="order-meta">
-        <span class="meta-chip">${euro.format(order.amount)}</span>
+        <span class="meta-chip">${amountChipLabel(order)}</span>
+        <span class="meta-chip">${escapeHtml(milestone.label)}</span>
         <span class="meta-chip">${dueCopy(order)}</span>
         <span class="meta-chip">Prestation ${eventCopy(order)}</span>
       </div>
+      ${scheduleMarkup(order)}
       <div class="quick-actions">
-        <button class="quick-action" type="button" data-action="advance">Avancer</button>
+        <button class="quick-action" type="button" data-action="advance">${primaryActionLabel(order)}</button>
         <button class="quick-action" type="button" data-action="remind">Relance</button>
         <button class="quick-action" type="button" data-action="paid">Payé</button>
       </div>
@@ -488,28 +689,59 @@ function handleOrderAction(event) {
   render();
 }
 
+function statusSequence(order) {
+  if (order.workflow === "immediate") return ["waiting", "paid"];
+  if (order.workflow === "monthly") return ["invoice", "waiting", "paid"];
+  return ["quote", "signature", "deposit", "balance", "waiting", "paid"];
+}
+
+function updateOrderDueDate(order) {
+  order.dueDate = currentMilestone(order).dueDate;
+}
+
 function advanceOrder(order) {
-  if (order.status === "deposit") {
-    order.status = "waiting";
-    showToast(`Demande d'acompte prête pour ${order.client}.`);
-    return;
-  }
-
-  if (order.status === "invoice") {
-    order.status = "waiting";
-    showToast(`Facture marquée envoyée à ${order.client}.`);
-    return;
-  }
-
   if (order.status === "late" || order.status === "waiting") {
     order.relances += 1;
     showToast(`Relance enregistrée pour ${order.client}.`);
+    return;
   }
+
+  const sequence = statusSequence(order);
+  const currentIndex = sequence.indexOf(order.status);
+  const nextStatus = sequence[currentIndex + 1] || "waiting";
+  order.status = nextStatus;
+  updateOrderDueDate(order);
+
+  const messages = {
+    signature: `Devis envoyé à ${order.client}.`,
+    deposit: `Signature enregistrée, acompte à suivre pour ${order.client}.`,
+    balance: `Acompte enregistré, solde planifié pour ${order.client}.`,
+    waiting: `Facturation envoyée, paiement à suivre pour ${order.client}.`,
+    paid: `${order.client} marqué payé.`
+  };
+
+  showToast(messages[nextStatus] || `Commande mise à jour pour ${order.client}.`);
+}
+
+function reminderMessage(order) {
+  const milestone = currentMilestone(order);
+  const dueDate = dateFormatter.format(parseDate(milestone.dueDate));
+  const amount = currentAmount(order);
+
+  if (order.status === "deposit") {
+    return `Bonjour, je vous confirme que l'acompte de ${euro.format(amount)} lié au devis est attendu pour le ${dueDate}. Merci beaucoup, Léana - L'atelier des jours fleuris.`;
+  }
+
+  if (order.status === "balance" || order.status === "invoice" || order.status === "waiting" || order.status === "late") {
+    return `Bonjour, je me permets de vous relancer concernant le solde de ${euro.format(amount)} attendu pour le ${dueDate}. Merci beaucoup, Léana - L'atelier des jours fleuris.`;
+  }
+
+  return `Bonjour, je reviens vers vous concernant ${milestone.label.toLowerCase()} prévu le ${dueDate}. Merci beaucoup, Léana - L'atelier des jours fleuris.`;
 }
 
 function prepareReminder(order) {
   order.relances += 1;
-  const message = `Bonjour, je me permets de vous relancer concernant la facture ${order.client} d'un montant de ${euro.format(order.amount)}. Merci beaucoup, Léana - L'atelier des jours fleuris.`;
+  const message = reminderMessage(order);
 
   if (navigator.clipboard) {
     navigator.clipboard.writeText(message).then(
@@ -542,8 +774,12 @@ function openSheet(clientId = "") {
   }
 
   orderSheet.classList.remove("is-hidden");
-  const dateInput = orderForm.elements.date;
-  dateInput.value = "2026-07-10";
+  orderForm.elements.eventDate.value = addDays(formatDateInput(today), 7);
+  orderForm.elements.quoteDate.value = formatDateInput(today);
+  orderForm.elements.signedDate.value = "";
+  orderForm.elements.depositPercent.value = String(WORKFLOWS.event_pre3.depositPercent);
+  orderForm.elements.workflow.value = "event_pre3";
+  orderForm.elements.status.value = "quote";
   if (clientId) orderClientSelect.value = clientId;
   setTimeout(() => orderClientSelect.focus(), 80);
 }
@@ -553,27 +789,52 @@ function closeOrderSheet() {
   orderForm.reset();
 }
 
+function applyWorkflowDefaultsFromType() {
+  const workflowKey = defaultWorkflowForType(orderForm.elements.type.value);
+  const workflow = WORKFLOWS[workflowKey];
+  orderForm.elements.workflow.value = workflowKey;
+  orderForm.elements.depositPercent.value = String(workflow.depositPercent);
+  orderForm.elements.status.value = workflowKey === "immediate" ? "waiting" : workflowKey === "monthly" ? "invoice" : "quote";
+}
+
+function applyWorkflowDepositDefault() {
+  const workflow = WORKFLOWS[orderForm.elements.workflow.value] || WORKFLOWS.event_pre3;
+  orderForm.elements.depositPercent.value = String(workflow.depositPercent);
+  if (orderForm.elements.workflow.value === "immediate") orderForm.elements.status.value = "waiting";
+  if (orderForm.elements.workflow.value === "monthly") orderForm.elements.status.value = "invoice";
+}
+
 function addOrder(event) {
   event.preventDefault();
   const data = new FormData(orderForm);
   const clientId = data.get("clientId");
   const client = clients.find((item) => item.id === clientId);
   const amount = Number(data.get("amount"));
-  const date = data.get("date");
+  const type = data.get("type");
+  const workflow = data.get("workflow") || defaultWorkflowForType(type);
+  const eventDate = data.get("eventDate");
+  const quoteDate = data.get("quoteDate") || formatDateInput(today);
+  const signedDate = data.get("signedDate") || "";
+  const depositPercent = Number(data.get("depositPercent") || WORKFLOWS[workflow]?.depositPercent || 0);
   if (!client) return showToast("Crée d'abord le client.");
 
-  orders.unshift({
+  const order = normalizeOrder({
     id: `${slugify(client.name)}-${Date.now()}`,
     clientId: client.id,
     client: client.name,
-    type: data.get("type"),
+    type,
+    workflow,
     amount,
-    dueDate: date,
-    eventDate: date,
+    eventDate,
+    quoteDate,
+    signedDate,
+    depositPercent,
     status: data.get("status"),
     contact: client.email || client.phone || "contact à ajouter",
     relances: 0
   });
+  updateOrderDueDate(order);
+  orders.unshift(order);
 
   saveOrders();
   closeOrderSheet();
@@ -661,6 +922,8 @@ orderSheet.addEventListener("click", (event) => {
   if (event.target === orderSheet) closeOrderSheet();
 });
 orderForm.addEventListener("submit", addOrder);
+orderForm.elements.type.addEventListener("change", applyWorkflowDefaultsFromType);
+orderForm.elements.workflow.addEventListener("change", applyWorkflowDepositDefault);
 
 closeClientSheet.addEventListener("click", closeClientForm);
 clientSheet.addEventListener("click", (event) => {

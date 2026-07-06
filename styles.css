@@ -470,6 +470,39 @@ select:focus {
   gap: 7px;
 }
 
+.schedule-list {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.schedule-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 30px;
+  border-radius: 8px;
+  background: #f8faf6;
+  padding: 6px 9px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.schedule-item strong {
+  flex: 0 0 auto;
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.schedule-item.is-current {
+  background: var(--butter);
+  color: #514f22;
+}
+
 .quick-action {
   min-height: 42px;
   min-width: 0;
@@ -605,6 +638,8 @@ select:focus {
 
 .sheet-panel {
   width: min(100%, 430px);
+  max-height: min(92vh, 760px);
+  overflow-y: auto;
   margin: 0 auto;
   border-radius: 8px 8px 0 0;
   background: var(--paper);
@@ -779,7 +814,7 @@ select:focus {
   }
 
   .metric-grid {
-    grid-template-columns: repeat(3, minmax(132px, 1fr));
+    grid-template-columns: repeat(4, minmax(112px, 1fr));
     gap: 12px;
   }
 

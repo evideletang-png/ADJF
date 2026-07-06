@@ -139,8 +139,22 @@
             </div>
             <div class="settings-row">
               <div>
-                <strong>Acompte mariage</strong>
-                <span>Déclenché dès devis accepté</span>
+                <strong>Workflow mariage</strong>
+                <span>Acompte à la signature, solde 3 jours avant</span>
+              </div>
+              <button class="small-stepper" type="button" data-setting="wedding">J-3</button>
+            </div>
+            <div class="settings-row">
+              <div>
+                <strong>Workflow pro</strong>
+                <span>Acompte à la signature, solde à J+7</span>
+              </div>
+              <button class="small-stepper" type="button" data-setting="pro">J+7</button>
+            </div>
+            <div class="settings-row">
+              <div>
+                <strong>Acompte standard</strong>
+                <span>Appliqué aux devis avec acompte</span>
               </div>
               <button class="small-stepper" type="button" data-setting="deposit">30%</button>
             </div>
@@ -190,8 +204,8 @@
             <span>Type</span>
             <select name="type">
               <option value="Mariage">Mariage</option>
-              <option value="Entreprise">Entreprise</option>
-              <option value="Événement">Événement</option>
+              <option value="Événement professionnel">Événement professionnel</option>
+              <option value="Abonnement entreprise">Abonnement entreprise</option>
               <option value="Commande boutique">Commande boutique</option>
             </select>
           </label>
@@ -201,14 +215,40 @@
               <input name="amount" type="number" inputmode="decimal" min="1" placeholder="480" required>
             </label>
             <label>
-              <span>Date</span>
-              <input name="date" type="date" required>
+              <span>Date prestation / livraison</span>
+              <input name="eventDate" type="date" required>
             </label>
           </div>
           <label>
-            <span>Prochaine étape</span>
+            <span>Workflow de facturation</span>
+            <select name="workflow">
+              <option value="event_pre3">Acompte signature + solde J-3</option>
+              <option value="event_post7">Acompte signature + solde J+7</option>
+              <option value="monthly">Facture mensuelle J+30</option>
+              <option value="immediate">Paiement immédiat</option>
+            </select>
+          </label>
+          <div class="form-grid">
+            <label>
+              <span>Date devis</span>
+              <input name="quoteDate" type="date">
+            </label>
+            <label>
+              <span>Date signature</span>
+              <input name="signedDate" type="date">
+            </label>
+          </div>
+          <label>
+            <span>Acompte %</span>
+            <input name="depositPercent" type="number" inputmode="numeric" min="0" max="100" value="30">
+          </label>
+          <label>
+            <span>Étape de départ</span>
             <select name="status">
-              <option value="deposit">Acompte à demander</option>
+              <option value="quote">Devis à envoyer</option>
+              <option value="signature">Signature attendue</option>
+              <option value="deposit">Acompte attendu</option>
+              <option value="balance">Solde à facturer</option>
               <option value="invoice">Facture à envoyer</option>
               <option value="waiting">Paiement attendu</option>
             </select>
