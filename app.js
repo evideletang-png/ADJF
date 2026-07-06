@@ -1,7 +1,10 @@
 const accessView = document.querySelector("#accessView");
 const appView = document.querySelector("#appView");
 const accessForm = document.querySelector("#accessForm");
-const pinInput = document.querySelector("#pinInput");
+const userInput = document.querySelector("#userInput");
+const passwordInput = document.querySelector("#passwordInput");
+const accessHelp = document.querySelector("#accessHelp");
+const accessButtonLabel = document.querySelector("#accessButtonLabel");
 const lockButton = document.querySelector("#lockButton");
 const tabs = document.querySelectorAll(".tab");
 const panels = {
@@ -27,6 +30,8 @@ const clientSheet = document.querySelector("#clientSheet");
 const closeClientSheet = document.querySelector("#closeClientSheet");
 const clientForm = document.querySelector("#clientForm");
 const refreshButton = document.querySelector("#refreshButton");
+const greetingTitle = document.querySelector("#greetingTitle");
+const profileName = document.querySelector("#profileName");
 
 const euro = new Intl.NumberFormat("fr-FR", {
   style: "currency",
@@ -42,6 +47,10 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
 
 const today = new Date("2026-07-06T09:00:00");
 const STORAGE_VERSION = "empty-production-v1";
+const DEFAULT_ADMIN_NAME = "Léana";
+const AUTH_USER_KEY = "atelier-auth-user";
+const AUTH_SALT_KEY = "atelier-auth-salt";
+const AUTH_HASH_KEY = "atelier-auth-password-hash";
 
 resetLegacyDemoData();
 
@@ -120,10 +129,89 @@ function normalizeClientProfile(profile) {
   return profile === "Particulier" ? "Particulier" : "Professionnel";
 }
 
-function showApp() {
+function configuredUserName() {
+  return localStorage.getItem(AUTH_USER_KEY) || DEFAULT_ADMIN_NAME;
+}
+
+function firstName(name) {
+  return name.trim().split(/\s+/)[0] || DEFAULT_ADMIN_NAME;
+}
+
+function applyUserName(name) {
+  const cleanName = name.trim() || DEFAULT_ADMIN_NAME;
+  greetingTitle.textContent = `Bonjour ${firstName(cleanName)}`;
+  profileName.textContent = cleanName;
+}
+
+function configureAccessForm() {
+  const hasPassword = Boolean(localStorage.getItem(AUTH_HASH_KEY));
+  userInput.value = configuredUserName();
+  passwordInput.value = "";
+  passwordInput.placeholder = hasPassword ? "Mot de passe" : "Créer un mot de passe";
+  passwordInput.autocomplete = hasPassword ? "current-password" : "new-password";
+  accessHelp.textContent = hasPassword ? "" : "Première connexion : choisis le mot de passe de Léana.";
+  accessButtonLabel.textContent = hasPassword ? "Ouvrir le tableau de bord" : "Créer l'accès";
+}
+
+function randomSalt() {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function hashPassword(password, salt) {
+  if (!crypto.subtle) {
+    let hash = 0;
+    const value = `${salt}:${password}`;
+    for (let index = 0; index < value.length; index += 1) {
+      hash = (hash << 5) - hash + value.charCodeAt(index);
+      hash |= 0;
+    }
+    return `fallback-${Math.abs(hash).toString(16)}`;
+  }
+
+  const data = new TextEncoder().encode(`${salt}:${password}`);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function unlockApp() {
+  const userName = userInput.value.trim();
+  const password = passwordInput.value;
+  const storedHash = localStorage.getItem(AUTH_HASH_KEY);
+  const storedSalt = localStorage.getItem(AUTH_SALT_KEY);
+  const storedUser = configuredUserName();
+
+  if (!userName || !password) {
+    showToast("Utilisateur et mot de passe requis.");
+    return;
+  }
+
+  if (!storedHash || !storedSalt) {
+    const salt = randomSalt();
+    const passwordHash = await hashPassword(password, salt);
+    localStorage.setItem(AUTH_USER_KEY, userName);
+    localStorage.setItem(AUTH_SALT_KEY, salt);
+    localStorage.setItem(AUTH_HASH_KEY, passwordHash);
+    showApp(userName);
+    return;
+  }
+
+  const passwordHash = await hashPassword(password, storedSalt);
+  if (userName !== storedUser || passwordHash !== storedHash) {
+    showToast("Accès refusé.");
+    return;
+  }
+
+  showApp(userName);
+}
+
+function showApp(userName = configuredUserName()) {
   localStorage.setItem("atelier-access", "open");
+  localStorage.setItem(AUTH_USER_KEY, userName);
   accessView.classList.add("is-hidden");
   appView.classList.remove("is-hidden");
+  applyUserName(userName);
   window.scrollTo(0, 0);
   render();
 }
@@ -132,8 +220,8 @@ function lockApp() {
   localStorage.removeItem("atelier-access");
   appView.classList.add("is-hidden");
   accessView.classList.remove("is-hidden");
-  pinInput.value = "";
-  pinInput.focus();
+  configureAccessForm();
+  passwordInput.focus();
 }
 
 function statusLabel(status) {
@@ -522,9 +610,9 @@ function addClient(event) {
   showToast("Client créé.");
 }
 
-accessForm.addEventListener("submit", (event) => {
+accessForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  showApp();
+  await unlockApp();
 });
 
 lockButton.addEventListener("click", lockApp);
@@ -589,8 +677,10 @@ document.querySelectorAll("[data-setting]").forEach((button) => {
   button.addEventListener("click", () => showToast("Réglage prêt pour la prochaine version."));
 });
 
-if (localStorage.getItem("atelier-access") === "open") {
+if (localStorage.getItem("atelier-access") === "open" && localStorage.getItem(AUTH_HASH_KEY)) {
   showApp();
 } else {
-  pinInput.focus();
+  localStorage.removeItem("atelier-access");
+  configureAccessForm();
+  passwordInput.focus();
 }
