@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#b9dce8">
+    <title>L'atelier des jours fleuris - Facturation</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="logo.jpg">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="access-view" id="accessView" aria-labelledby="accessTitle">
+        <div class="brand-lockup">
+          <img src="logo.jpg" alt="Logo L'atelier des jours fleuris" class="brand-logo">
+          <p class="brand-name">L'atelier des jours fleuris</p>
+        </div>
+
+        <form class="access-panel" id="accessForm">
+          <p class="eyebrow">Accès réservé</p>
+          <h1 id="accessTitle">Espace facturation</h1>
+          <label>
+            <span>Utilisateur</span>
+            <input type="text" value="Léana SINGER" autocomplete="name" readonly>
+          </label>
+          <label>
+            <span>Code d'accès</span>
+            <input id="pinInput" type="password" inputmode="numeric" placeholder="2604" autocomplete="current-password">
+          </label>
+          <button class="primary-action" type="submit">
+            <span class="button-icon" aria-hidden="true">→</span>
+            Ouvrir le tableau de bord
+          </button>
+        </form>
+      </section>
+
+      <section class="app-view is-hidden" id="appView">
+        <header class="app-header">
+          <div class="header-main">
+            <img src="logo.jpg" alt="" class="header-logo">
+            <div>
+              <p class="today-label" id="todayLabel">Lundi 6 juillet</p>
+              <h1>Bonjour Léana</h1>
+            </div>
+          </div>
+          <button class="icon-button" id="lockButton" type="button" aria-label="Verrouiller l'accès">
+            <span aria-hidden="true">⌁</span>
+          </button>
+        </header>
+
+        <section class="cash-band" aria-label="Résumé de facturation">
+          <div>
+            <p>À encaisser</p>
+            <strong id="totalOpen">0 €</strong>
+          </div>
+          <div>
+            <p>En retard</p>
+            <strong id="totalLate">0 €</strong>
+          </div>
+        </section>
+
+        <nav class="tabs" aria-label="Navigation principale">
+          <button class="tab is-active" type="button" data-view="today">
+            <span aria-hidden="true">●</span>
+            Aujourd'hui
+          </button>
+          <button class="tab" type="button" data-view="orders">
+            <span aria-hidden="true">▦</span>
+            Commandes
+          </button>
+          <button class="tab" type="button" data-view="clients">
+            <span aria-hidden="true">◍</span>
+            Clients
+          </button>
+          <button class="tab" type="button" data-view="settings">
+            <span aria-hidden="true">⚙</span>
+            Accès
+          </button>
+        </nav>
+
+        <section class="view-panel" id="todayView">
+          <div class="metric-grid" id="metricGrid"></div>
+
+          <div class="section-heading">
+            <h2>À traiter maintenant</h2>
+            <button class="ghost-action" id="refreshButton" type="button">Actualiser</button>
+          </div>
+          <div class="task-list" id="taskList"></div>
+        </section>
+
+        <section class="view-panel is-hidden" id="ordersView">
+          <div class="section-heading">
+            <h2>Commandes</h2>
+            <button class="ghost-action" type="button" data-open-sheet>Ajouter</button>
+          </div>
+          <div class="filter-row" id="filterRow" role="group" aria-label="Filtrer les commandes">
+            <button class="filter-chip is-active" type="button" data-filter="all">Tout</button>
+            <button class="filter-chip" type="button" data-filter="invoice">À facturer</button>
+            <button class="filter-chip" type="button" data-filter="late">En retard</button>
+            <button class="filter-chip" type="button" data-filter="paid">Payé</button>
+          </div>
+          <div class="order-list" id="orderList"></div>
+        </section>
+
+        <section class="view-panel is-hidden" id="clientsView">
+          <div class="section-heading">
+            <h2>Clients</h2>
+            <button class="ghost-action" type="button" data-open-client-sheet>Ajouter</button>
+          </div>
+          <div class="client-list" id="clientList"></div>
+        </section>
+
+        <section class="view-panel is-hidden" id="settingsView">
+          <div class="profile-panel">
+            <img src="logo.jpg" alt="" class="profile-logo">
+            <div>
+              <p class="eyebrow">Accès principal</p>
+              <h2>Léana SINGER</h2>
+              <p>L'atelier des jours fleuris</p>
+            </div>
+          </div>
+
+          <div class="settings-list">
+            <div class="settings-row">
+              <div>
+                <strong>Relance douce</strong>
+                <span>7 jours après facture</span>
+              </div>
+              <button class="small-stepper" type="button" data-setting="soft">J+7</button>
+            </div>
+            <div class="settings-row">
+              <div>
+                <strong>Relance ferme</strong>
+                <span>14 jours après facture</span>
+              </div>
+              <button class="small-stepper" type="button" data-setting="firm">J+14</button>
+            </div>
+            <div class="settings-row">
+              <div>
+                <strong>Acompte mariage</strong>
+                <span>Déclenché dès devis accepté</span>
+              </div>
+              <button class="small-stepper" type="button" data-setting="deposit">30%</button>
+            </div>
+            <div class="settings-row">
+              <div>
+                <strong>Gmail</strong>
+                <span>Envoi devis, acomptes, soldes et relances</span>
+              </div>
+              <button class="small-stepper" type="button" data-setting="gmail">À brancher</button>
+            </div>
+            <div class="settings-row">
+              <div>
+                <strong>Modèles d'emails</strong>
+                <span>Messages prêts pour chaque étape</span>
+              </div>
+              <button class="small-stepper" type="button" data-setting="templates">4 modèles</button>
+            </div>
+            <div class="settings-row">
+              <div>
+                <strong>Documents PDF</strong>
+                <span>Devis, facture d'acompte, facture de solde</span>
+              </div>
+              <button class="small-stepper" type="button" data-setting="pdf">Prévu</button>
+            </div>
+          </div>
+        </section>
+
+        <button class="floating-action" type="button" data-open-sheet aria-label="Nouvelle commande">
+          <span aria-hidden="true">+</span>
+        </button>
+      </section>
+    </main>
+
+    <section class="bottom-sheet is-hidden" id="orderSheet" aria-labelledby="sheetTitle" aria-modal="true" role="dialog">
+      <div class="sheet-panel">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <div class="section-heading">
+          <h2 id="sheetTitle">Nouvelle commande</h2>
+          <button class="icon-button" id="closeSheet" type="button" aria-label="Fermer">×</button>
+        </div>
+        <form id="orderForm" class="order-form">
+          <label>
+            <span>Client</span>
+            <select name="clientId" id="orderClientSelect" required></select>
+          </label>
+          <label>
+            <span>Type</span>
+            <select name="type">
+              <option value="Mariage">Mariage</option>
+              <option value="Entreprise">Entreprise</option>
+              <option value="Événement">Événement</option>
+              <option value="Commande boutique">Commande boutique</option>
+            </select>
+          </label>
+          <div class="form-grid">
+            <label>
+              <span>Montant</span>
+              <input name="amount" type="number" inputmode="decimal" min="1" placeholder="480" required>
+            </label>
+            <label>
+              <span>Date</span>
+              <input name="date" type="date" required>
+            </label>
+          </div>
+          <label>
+            <span>Prochaine étape</span>
+            <select name="status">
+              <option value="deposit">Acompte à demander</option>
+              <option value="invoice">Facture à envoyer</option>
+              <option value="waiting">Paiement attendu</option>
+            </select>
+          </label>
+          <button class="primary-action" type="submit">
+            <span class="button-icon" aria-hidden="true">+</span>
+            Ajouter la commande
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <section class="bottom-sheet is-hidden" id="clientSheet" aria-labelledby="clientSheetTitle" aria-modal="true" role="dialog">
+      <div class="sheet-panel">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <div class="section-heading">
+          <h2 id="clientSheetTitle">Nouveau client</h2>
+          <button class="icon-button" id="closeClientSheet" type="button" aria-label="Fermer">×</button>
+        </div>
+        <form id="clientForm" class="order-form">
+          <label>
+            <span>Nom du client</span>
+            <input name="name" type="text" placeholder="Maison Bleue" required>
+          </label>
+          <div class="form-grid">
+            <label>
+              <span>Email</span>
+              <input name="email" type="email" placeholder="contact@email.fr">
+            </label>
+            <label>
+              <span>Téléphone</span>
+              <input name="phone" type="tel" placeholder="06 12 34 56 78">
+            </label>
+          </div>
+          <label>
+            <span>Profil</span>
+            <select name="profile">
+              <option value="Particulier">Particulier</option>
+              <option value="Entreprise">Entreprise</option>
+              <option value="Mariage">Mariage</option>
+              <option value="Événementiel">Événementiel</option>
+            </select>
+          </label>
+          <button class="primary-action" type="submit">
+            <span class="button-icon" aria-hidden="true">+</span>
+            Créer le client
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

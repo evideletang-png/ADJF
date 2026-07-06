@@ -1,0 +1,16 @@
+{
+  "name": "L'atelier des jours fleuris - Facturation",
+  "short_name": "Jours fleuris",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fffdf7",
+  "theme_color": "#b9dce8",
+  "icons": [
+    {
+      "src": "logo.jpg",
+      "sizes": "1000x1000",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}
