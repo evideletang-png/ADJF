@@ -112,8 +112,12 @@ function clientForOrder(order) {
     name: order.client,
     email: order.contact,
     phone: "",
-    profile: "Client"
+    profile: "Particulier"
   };
+}
+
+function normalizeClientProfile(profile) {
+  return profile === "Particulier" ? "Particulier" : "Professionnel";
 }
 
 function showApp() {
@@ -329,7 +333,7 @@ function renderClients() {
         <div class="client-topline">
           <div class="client-title">
             <h3>${escapeHtml(client.name)}</h3>
-            <p>${escapeHtml(client.profile)} · ${client.count} commande${client.count > 1 ? "s" : ""}</p>
+            <p>${escapeHtml(normalizeClientProfile(client.profile))} · ${client.count} commande${client.count > 1 ? "s" : ""}</p>
           </div>
           <div class="client-balance">
             <strong>${euro.format(client.open)}</strong>
@@ -506,7 +510,7 @@ function addClient(event) {
   const name = data.get("name").trim();
   const email = data.get("email").trim();
   const phone = data.get("phone").trim();
-  const profile = data.get("profile");
+  const profile = normalizeClientProfile(data.get("profile"));
   const idBase = slugify(name) || "client";
   const id = clients.some((client) => client.id === idBase) ? `${idBase}-${Date.now()}` : idBase;
 
