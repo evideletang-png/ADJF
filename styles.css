@@ -29,7 +29,8 @@ body {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -79,6 +80,7 @@ button {
 .settings-row,
 .task-card,
 .order-card,
+.document-card,
 .client-card,
 .metric-card {
   border: 1px solid var(--line);
@@ -142,7 +144,8 @@ label span {
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
   min-height: 48px;
   border: 1px solid var(--line);
@@ -154,9 +157,17 @@ select {
 }
 
 input:focus,
-select:focus {
+select:focus,
+textarea:focus {
   border-color: var(--leaf);
   box-shadow: 0 0 0 3px rgba(79, 138, 103, 0.16);
+}
+
+textarea {
+  min-height: 120px;
+  padding: 12px 13px;
+  line-height: 1.42;
+  resize: vertical;
 }
 
 .primary-action,
@@ -279,7 +290,7 @@ select:focus {
   top: 0;
   z-index: 4;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 6px;
   margin: 0 -2px 16px;
   padding: 8px 0;
@@ -296,7 +307,7 @@ select:focus {
   border-radius: 8px;
   background: transparent;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
 }
 
@@ -362,6 +373,7 @@ select:focus {
 .task-list,
 .order-list,
 .client-list,
+.document-list,
 .settings-list {
   display: grid;
   gap: 10px;
@@ -369,6 +381,7 @@ select:focus {
 
 .task-card,
 .order-card,
+.document-card,
 .client-card {
   display: grid;
   gap: 12px;
@@ -466,7 +479,7 @@ select:focus {
 
 .quick-actions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(74px, 1fr));
   gap: 7px;
 }
 
@@ -834,13 +847,15 @@ select:focus {
   .task-list,
   .order-list,
   .client-list,
+  .document-list,
   .settings-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
   }
 
   .task-card,
-  .order-card {
+  .order-card,
+  .document-card {
     align-content: start;
     min-height: 196px;
     padding: 15px;
@@ -882,7 +897,8 @@ select:focus {
   }
 
   .task-list,
-  .order-list {
+  .order-list,
+  .document-list {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
@@ -891,6 +907,7 @@ select:focus {
   }
 
   .client-list,
+  .document-list,
   .settings-list {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }

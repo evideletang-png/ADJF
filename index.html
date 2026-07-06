@@ -74,6 +74,10 @@
             <span aria-hidden="true">◍</span>
             Clients
           </button>
+          <button class="tab" type="button" data-view="documents">
+            <span aria-hidden="true">▤</span>
+            Documents
+          </button>
           <button class="tab" type="button" data-view="settings">
             <span aria-hidden="true">⚙</span>
             Accès
@@ -110,6 +114,20 @@
             <button class="ghost-action" type="button" data-open-client-sheet>Ajouter</button>
           </div>
           <div class="client-list" id="clientList"></div>
+        </section>
+
+        <section class="view-panel is-hidden" id="documentsView">
+          <div class="section-heading">
+            <h2>Documents</h2>
+            <button class="ghost-action" type="button" data-open-document-sheet>Ajouter</button>
+          </div>
+          <div class="filter-row" role="group" aria-label="Actions documents">
+            <button class="filter-chip is-active" type="button" data-document-filter="all">Tout</button>
+            <button class="filter-chip" type="button" data-document-filter="quote">Devis</button>
+            <button class="filter-chip" type="button" data-document-filter="invoice">Factures</button>
+            <button class="filter-chip" type="button" data-document-filter="reminder">Relances</button>
+          </div>
+          <div class="document-list" id="documentList"></div>
         </section>
 
         <section class="view-panel is-hidden" id="settingsView">
@@ -256,6 +274,58 @@
           <button class="primary-action" type="submit">
             <span class="button-icon" aria-hidden="true">+</span>
             Ajouter la commande
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <section class="bottom-sheet is-hidden" id="documentSheet" aria-labelledby="documentSheetTitle" aria-modal="true" role="dialog">
+      <div class="sheet-panel">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <div class="section-heading">
+          <h2 id="documentSheetTitle">Nouveau document</h2>
+          <button class="icon-button" id="closeDocumentSheet" type="button" aria-label="Fermer">×</button>
+        </div>
+        <form id="documentForm" class="order-form">
+          <label>
+            <span>Commande</span>
+            <select name="orderId" id="documentOrderSelect" required></select>
+          </label>
+          <label>
+            <span>Type de document</span>
+            <select name="documentType">
+              <option value="quote">Devis</option>
+              <option value="deposit_invoice">Facture d'acompte</option>
+              <option value="balance_invoice">Facture de solde</option>
+              <option value="final_invoice">Facture finale</option>
+              <option value="reminder">Relance</option>
+            </select>
+          </label>
+          <div class="form-grid">
+            <label>
+              <span>Date document</span>
+              <input name="issueDate" type="date" required>
+            </label>
+            <label>
+              <span>Date échéance</span>
+              <input name="dueDate" type="date" required>
+            </label>
+          </div>
+          <label>
+            <span>Montant</span>
+            <input name="amount" type="number" inputmode="decimal" min="0" step="0.01" required>
+          </label>
+          <label>
+            <span>Objet e-mail</span>
+            <input name="emailSubject" type="text" required>
+          </label>
+          <label>
+            <span>Message e-mail</span>
+            <textarea name="emailBody" rows="5" required></textarea>
+          </label>
+          <button class="primary-action" type="submit">
+            <span class="button-icon" aria-hidden="true">+</span>
+            Créer le document
           </button>
         </form>
       </div>

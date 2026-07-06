@@ -11,13 +11,16 @@ const panels = {
   today: document.querySelector("#todayView"),
   orders: document.querySelector("#ordersView"),
   clients: document.querySelector("#clientsView"),
+  documents: document.querySelector("#documentsView"),
   settings: document.querySelector("#settingsView")
 };
 const metricGrid = document.querySelector("#metricGrid");
 const taskList = document.querySelector("#taskList");
 const orderList = document.querySelector("#orderList");
 const clientList = document.querySelector("#clientList");
+const documentList = document.querySelector("#documentList");
 const filterRow = document.querySelector("#filterRow");
+const documentFilterButtons = document.querySelectorAll("[data-document-filter]");
 const todayLabel = document.querySelector("#todayLabel");
 const totalOpen = document.querySelector("#totalOpen");
 const totalLate = document.querySelector("#totalLate");
@@ -29,6 +32,10 @@ const orderClientSelect = document.querySelector("#orderClientSelect");
 const clientSheet = document.querySelector("#clientSheet");
 const closeClientSheet = document.querySelector("#closeClientSheet");
 const clientForm = document.querySelector("#clientForm");
+const documentSheet = document.querySelector("#documentSheet");
+const closeDocumentSheet = document.querySelector("#closeDocumentSheet");
+const documentForm = document.querySelector("#documentForm");
+const documentOrderSelect = document.querySelector("#documentOrderSelect");
 const refreshButton = document.querySelector("#refreshButton");
 const greetingTitle = document.querySelector("#greetingTitle");
 const profileName = document.querySelector("#profileName");
@@ -95,20 +102,52 @@ const STATUS_PRIORITY = {
   paid: 7
 };
 
+const DOCUMENT_TYPES = {
+  quote: {
+    label: "Devis",
+    prefix: "DEV",
+    subject: "Votre devis - L'atelier des jours fleuris"
+  },
+  deposit_invoice: {
+    label: "Facture d'acompte",
+    prefix: "FAC-A",
+    subject: "Votre facture d'acompte - L'atelier des jours fleuris"
+  },
+  balance_invoice: {
+    label: "Facture de solde",
+    prefix: "FAC-S",
+    subject: "Votre facture de solde - L'atelier des jours fleuris"
+  },
+  final_invoice: {
+    label: "Facture finale",
+    prefix: "FAC",
+    subject: "Votre facture - L'atelier des jours fleuris"
+  },
+  reminder: {
+    label: "Relance",
+    prefix: "REL",
+    subject: "Relance paiement - L'atelier des jours fleuris"
+  }
+};
+
 resetLegacyDemoData();
 
 const defaultClients = [];
 const defaultOrders = [];
+const defaultDocuments = [];
 
 let clients = loadClients();
 let orders = loadOrders();
+let documents = loadDocuments();
 let activeFilter = "all";
+let activeDocumentFilter = "all";
 
 function resetLegacyDemoData() {
   if (localStorage.getItem("atelier-storage-version") === STORAGE_VERSION) return;
 
   localStorage.removeItem("atelier-clients");
   localStorage.removeItem("atelier-orders");
+  localStorage.removeItem("atelier-documents");
   localStorage.setItem("atelier-storage-version", STORAGE_VERSION);
 }
 
@@ -132,12 +171,26 @@ function loadOrders() {
   }
 }
 
+function loadDocuments() {
+  const stored = localStorage.getItem("atelier-documents");
+  if (!stored) return defaultDocuments;
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return defaultDocuments;
+  }
+}
+
 function saveClients() {
   localStorage.setItem("atelier-clients", JSON.stringify(clients));
 }
 
 function saveOrders() {
   localStorage.setItem("atelier-orders", JSON.stringify(orders));
+}
+
+function saveDocuments() {
+  localStorage.setItem("atelier-documents", JSON.stringify(documents));
 }
 
 function escapeHtml(value) {
@@ -173,6 +226,14 @@ function addDays(dateValue, days) {
 
 function workflowForOrder(order) {
   return WORKFLOWS[order.workflow] || WORKFLOWS.event_pre3;
+}
+
+function orderById(orderId) {
+  return orders.find((order) => order.id === orderId);
+}
+
+function documentTypeConfig(type) {
+  return DOCUMENT_TYPES[type] || DOCUMENT_TYPES.quote;
 }
 
 function defaultWorkflowForType(type) {
@@ -377,6 +438,14 @@ function buildSchedule(order) {
   ];
 }
 
+function depositAmount(order) {
+  return Math.round(order.amount * (order.depositPercent || 0) / 100);
+}
+
+function balanceAmount(order) {
+  return Math.max(order.amount - depositAmount(order), 0);
+}
+
 function currentMilestone(order) {
   if (order.status === "paid") {
     return { key: "paid", label: "Commande clôturée", dueDate: order.eventDate || formatDateInput(today), amount: 0 };
@@ -393,6 +462,39 @@ function currentAmount(order) {
 function payableAmount(order) {
   if (order.status === "quote" || order.status === "signature" || order.status === "paid") return 0;
   return currentAmount(order);
+}
+
+function defaultDocumentTypeForOrder(order) {
+  if (!order) return "quote";
+  if (order.status === "quote" || order.status === "signature") return "quote";
+  if (order.status === "deposit") return "deposit_invoice";
+  if (order.status === "balance" || order.status === "invoice" || order.status === "waiting") return "balance_invoice";
+  if (isOrderLate(order) || order.status === "late") return "reminder";
+  return "final_invoice";
+}
+
+function defaultDocumentAmount(order, type) {
+  if (!order) return 0;
+  if (type === "quote" || type === "final_invoice") return order.amount;
+  if (type === "deposit_invoice") return depositAmount(order);
+  if (type === "balance_invoice") return balanceAmount(order);
+  if (type === "reminder") return payableAmount(order) || currentAmount(order) || order.amount;
+  return order.amount;
+}
+
+function defaultDocumentDueDate(order, type) {
+  if (!order) return formatDateInput(today);
+  if (type === "quote") return addDays(formatDateInput(today), 15);
+  if (type === "deposit_invoice") return order.signedDate || order.quoteDate || formatDateInput(today);
+  if (type === "balance_invoice" || type === "reminder") return currentMilestone(order).dueDate;
+  return currentMilestone(order).dueDate || order.eventDate;
+}
+
+function nextDocumentNumber(type) {
+  const year = today.getFullYear();
+  const prefix = documentTypeConfig(type).prefix;
+  const count = documents.filter((doc) => doc.number?.startsWith(`${prefix}-${year}`)).length + 1;
+  return `${prefix}-${year}-${String(count).padStart(3, "0")}`;
 }
 
 function displayAmount(order) {
@@ -435,11 +537,13 @@ function actionableOrders() {
 function render() {
   todayLabel.textContent = dateFormatter.format(today);
   renderClientOptions();
+  renderDocumentOrderOptions();
   renderTotals();
   renderMetrics();
   renderTasks();
   renderOrders();
   renderClients();
+  renderDocuments();
 }
 
 function renderTotals() {
@@ -540,6 +644,7 @@ function taskCard(order) {
       <div class="quick-actions">
         <button class="quick-action primary ${warning}" type="button" data-action="advance">${primary}</button>
         <button class="quick-action" type="button" data-action="remind">Message</button>
+        <button class="quick-action" type="button" data-action="document">Doc</button>
         <button class="quick-action" type="button" data-action="paid">Payé</button>
       </div>
     </article>
@@ -587,6 +692,7 @@ function orderCard(order) {
       <div class="quick-actions">
         <button class="quick-action" type="button" data-action="advance">${primaryActionLabel(order)}</button>
         <button class="quick-action" type="button" data-action="remind">Relance</button>
+        <button class="quick-action" type="button" data-action="document">Doc</button>
         <button class="quick-action" type="button" data-action="paid">Payé</button>
       </div>
     </article>
@@ -642,6 +748,59 @@ function renderClients() {
     .join("");
 }
 
+function renderDocuments() {
+  const filteredDocuments = documents.filter((doc) => {
+    if (activeDocumentFilter === "all") return true;
+    if (activeDocumentFilter === "invoice") return doc.type.includes("invoice");
+    return doc.type === activeDocumentFilter;
+  });
+
+  if (!filteredDocuments.length) {
+    documentList.innerHTML = `<div class="empty-state">Aucun document pour le moment. Crée un devis ou une facture depuis une commande.</div>`;
+    return;
+  }
+
+  documentList.innerHTML = filteredDocuments
+    .slice()
+    .sort((a, b) => parseDate(b.issueDate) - parseDate(a.issueDate))
+    .map(documentCard)
+    .join("");
+}
+
+function documentEmailStatusLabel(status) {
+  if (status === "sent") return "Envoyé";
+  if (status === "prepared") return "E-mail préparé";
+  return "Brouillon";
+}
+
+function documentCard(doc) {
+  const order = orderById(doc.orderId);
+  const client = order ? clientForOrder(order) : clients.find((item) => item.id === doc.clientId);
+  const type = documentTypeConfig(doc.type);
+
+  return `
+    <article class="document-card" data-document-id="${escapeHtml(doc.id)}">
+      <div class="order-topline">
+        <div class="order-title">
+          <h3>${escapeHtml(type.label)} ${escapeHtml(doc.number)}</h3>
+          <p>${escapeHtml(client?.name || "Client à retrouver")} · ${escapeHtml(order?.type || "Commande")}</p>
+        </div>
+        <span class="status-pill ${doc.emailStatus === "sent" ? "paid" : ""}">${documentEmailStatusLabel(doc.emailStatus)}</span>
+      </div>
+      <div class="order-meta">
+        <span class="meta-chip">${euro.format(doc.amount)}</span>
+        <span class="meta-chip">Émis ${dateFormatter.format(parseDate(doc.issueDate))}</span>
+        <span class="meta-chip">Échéance ${dateFormatter.format(parseDate(doc.dueDate))}</span>
+      </div>
+      <div class="quick-actions">
+        <button class="quick-action primary" type="button" data-document-action="pdf">PDF</button>
+        <button class="quick-action" type="button" data-document-action="email">E-mail</button>
+        <button class="quick-action" type="button" data-document-action="sent">Envoyé</button>
+      </div>
+    </article>
+  `;
+}
+
 function renderClientOptions() {
   const selected = orderClientSelect.value;
   orderClientSelect.disabled = clients.length === 0;
@@ -657,6 +816,27 @@ function renderClientOptions() {
 
   if (clients.some((client) => client.id === selected)) {
     orderClientSelect.value = selected;
+  }
+}
+
+function renderDocumentOrderOptions() {
+  const selected = documentOrderSelect.value;
+  documentOrderSelect.disabled = orders.length === 0;
+
+  if (!orders.length) {
+    documentOrderSelect.innerHTML = `<option value="">Crée d'abord une commande</option>`;
+    return;
+  }
+
+  documentOrderSelect.innerHTML = orders
+    .map((order) => {
+      const client = clientForOrder(order);
+      return `<option value="${escapeHtml(order.id)}">${escapeHtml(client.name)} · ${escapeHtml(order.type)} · ${eventCopy(order)}</option>`;
+    })
+    .join("");
+
+  if (orders.some((order) => order.id === selected)) {
+    documentOrderSelect.value = selected;
   }
 }
 
@@ -683,6 +863,7 @@ function handleOrderAction(event) {
   const action = button.dataset.action;
   if (action === "advance") advanceOrder(order);
   if (action === "remind") prepareReminder(order);
+  if (action === "document") openDocumentSheet(order.id);
   if (action === "paid") markPaid(order);
 
   saveOrders();
@@ -787,6 +968,255 @@ function openSheet(clientId = "") {
 function closeOrderSheet() {
   orderSheet.classList.add("is-hidden");
   orderForm.reset();
+}
+
+function defaultEmailBody(order, documentType, amount, dueDate) {
+  const type = documentTypeConfig(documentType);
+  const formattedDueDate = dateFormatter.format(parseDate(dueDate));
+
+  if (documentType === "quote") {
+    return `Bonjour,\n\nVous trouverez ci-joint le devis pour votre prestation ${order.type.toLowerCase()} prévue le ${dateFormatter.format(parseDate(order.eventDate))}.\n\nJe reste disponible si vous avez des questions.\n\nMerci beaucoup,\nLéana\nL'atelier des jours fleuris`;
+  }
+
+  if (documentType === "reminder") {
+    return `Bonjour,\n\nJe me permets de vous relancer concernant ${type.label.toLowerCase()} d'un montant de ${euro.format(amount)}, attendu pour le ${formattedDueDate}.\n\nMerci beaucoup,\nLéana\nL'atelier des jours fleuris`;
+  }
+
+  return `Bonjour,\n\nVous trouverez ci-joint ${type.label.toLowerCase()} d'un montant de ${euro.format(amount)}, avec une échéance au ${formattedDueDate}.\n\nMerci beaucoup,\nLéana\nL'atelier des jours fleuris`;
+}
+
+function fillDocumentForm(orderId, documentType = "") {
+  const order = orderById(orderId || documentOrderSelect.value);
+  if (!order) return;
+
+  const type = documentType || defaultDocumentTypeForOrder(order);
+  const amount = defaultDocumentAmount(order, type);
+  const dueDate = defaultDocumentDueDate(order, type);
+  const config = documentTypeConfig(type);
+
+  documentOrderSelect.value = order.id;
+  documentForm.elements.documentType.value = type;
+  documentForm.elements.issueDate.value = formatDateInput(today);
+  documentForm.elements.dueDate.value = dueDate;
+  documentForm.elements.amount.value = String(amount);
+  documentForm.elements.emailSubject.value = config.subject;
+  documentForm.elements.emailBody.value = defaultEmailBody(order, type, amount, dueDate);
+}
+
+function openDocumentSheet(orderId = "") {
+  if (!orders.length) {
+    setView("orders");
+    showToast("Crée d'abord une commande.");
+    return;
+  }
+
+  documentSheet.classList.remove("is-hidden");
+  const selectedOrderId = orderId || documentOrderSelect.value || orders[0].id;
+  fillDocumentForm(selectedOrderId);
+  setTimeout(() => documentOrderSelect.focus(), 80);
+}
+
+function closeDocumentForm() {
+  documentSheet.classList.add("is-hidden");
+  documentForm.reset();
+}
+
+function addDocument(event) {
+  event.preventDefault();
+  const data = new FormData(documentForm);
+  const order = orderById(data.get("orderId"));
+  if (!order) return showToast("Commande introuvable.");
+
+  const client = clientForOrder(order);
+  const type = data.get("documentType");
+  const doc = {
+    id: `document-${Date.now()}`,
+    number: nextDocumentNumber(type),
+    type,
+    orderId: order.id,
+    clientId: client.id,
+    amount: Number(data.get("amount")),
+    issueDate: data.get("issueDate"),
+    dueDate: data.get("dueDate"),
+    emailSubject: data.get("emailSubject").trim(),
+    emailBody: data.get("emailBody").trim(),
+    emailStatus: "draft",
+    createdAt: new Date().toISOString()
+  };
+
+  documents.unshift(doc);
+  saveDocuments();
+  closeDocumentForm();
+  setView("documents");
+  render();
+  showToast("Document créé.");
+}
+
+function documentById(documentId) {
+  return documents.find((doc) => doc.id === documentId);
+}
+
+function printableDocumentHtml(doc) {
+  const order = orderById(doc.orderId);
+  const client = order ? clientForOrder(order) : clients.find((item) => item.id === doc.clientId);
+  const type = documentTypeConfig(doc.type);
+  const issueDate = dateFormatter.format(parseDate(doc.issueDate));
+  const dueDate = dateFormatter.format(parseDate(doc.dueDate));
+  const prestationDate = order ? dateFormatter.format(parseDate(order.eventDate)) : "";
+  const logoUrl = new URL("logo.jpg", window.location.href).href;
+
+  return `
+    <!doctype html>
+    <html lang="fr">
+      <head>
+        <meta charset="utf-8">
+        <title>${escapeHtml(type.label)} ${escapeHtml(doc.number)}</title>
+        <style>
+          :root { font-family: Inter, Arial, sans-serif; color: #263532; }
+          body { margin: 0; background: #fffdf7; }
+          .page { max-width: 820px; margin: 0 auto; padding: 44px; }
+          header { display: flex; align-items: center; justify-content: space-between; gap: 24px; border-bottom: 1px solid #d8e3e2; padding-bottom: 24px; }
+          img { width: 86px; height: 86px; object-fit: cover; border-radius: 8px; }
+          h1 { margin: 0; font-size: 30px; }
+          h2 { margin: 0 0 10px; font-size: 18px; }
+          p { margin: 0; line-height: 1.45; }
+          .muted { color: #6f7d7a; }
+          .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin: 30px 0; }
+          .box { border: 1px solid #d8e3e2; border-radius: 8px; padding: 16px; background: #ffffff; }
+          table { width: 100%; border-collapse: collapse; margin-top: 28px; }
+          th, td { border-bottom: 1px solid #d8e3e2; padding: 14px 0; text-align: left; }
+          th:last-child, td:last-child { text-align: right; }
+          .total { display: flex; justify-content: flex-end; margin-top: 22px; }
+          .total strong { min-width: 220px; border-radius: 8px; background: #b9dce8; padding: 18px; font-size: 24px; text-align: right; }
+          footer { margin-top: 46px; color: #6f7d7a; font-size: 13px; }
+          @media print { body { background: #fff; } .page { padding: 24px; } }
+        </style>
+      </head>
+      <body>
+        <main class="page">
+          <header>
+            <div>
+              <h1>${escapeHtml(type.label)}</h1>
+              <p class="muted">${escapeHtml(doc.number)}</p>
+            </div>
+            <div>
+              <img src="${escapeHtml(logoUrl)}" alt="">
+            </div>
+          </header>
+
+          <section class="grid">
+            <div class="box">
+              <h2>L'atelier des jours fleuris</h2>
+              <p>Léana</p>
+              <p class="muted">Créations florales et événements</p>
+            </div>
+            <div class="box">
+              <h2>Client</h2>
+              <p>${escapeHtml(client?.name || "Client")}</p>
+              <p class="muted">${escapeHtml(client?.email || "")}</p>
+              <p class="muted">${escapeHtml(client?.phone || "")}</p>
+            </div>
+          </section>
+
+          <section class="grid">
+            <div class="box">
+              <h2>Dates</h2>
+              <p>Document : ${issueDate}</p>
+              <p>Échéance : ${dueDate}</p>
+              ${prestationDate ? `<p>Prestation : ${prestationDate}</p>` : ""}
+            </div>
+            <div class="box">
+              <h2>Commande</h2>
+              <p>${escapeHtml(order?.type || "Prestation")}</p>
+              <p class="muted">${escapeHtml(order ? workflowForOrder(order).label : "")}</p>
+            </div>
+          </section>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Désignation</th>
+                <th>Montant</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>${escapeHtml(type.label)} - ${escapeHtml(order?.type || "Prestation florale")}</td>
+                <td>${euro.format(doc.amount)}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="total">
+            <strong>${euro.format(doc.amount)}</strong>
+          </div>
+
+          <footer>
+            <p>Document généré par L'atelier des jours fleuris. Les mentions légales, TVA, SIRET et conditions de règlement seront à compléter dans la prochaine version serveur.</p>
+          </footer>
+        </main>
+        <script>window.addEventListener("load", () => setTimeout(() => window.print(), 250));</script>
+      </body>
+    </html>
+  `;
+}
+
+function openPrintableDocument(documentId) {
+  const doc = documentById(documentId);
+  if (!doc) return showToast("Document introuvable.");
+
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) {
+    showToast("Autorise les fenêtres pour générer le PDF.");
+    return;
+  }
+
+  printWindow.document.open();
+  printWindow.document.write(printableDocumentHtml(doc));
+  printWindow.document.close();
+}
+
+function prepareDocumentEmail(documentId) {
+  const doc = documentById(documentId);
+  if (!doc) return showToast("Document introuvable.");
+
+  const order = orderById(doc.orderId);
+  const client = order ? clientForOrder(order) : clients.find((item) => item.id === doc.clientId);
+  const email = client?.email;
+
+  if (!email) {
+    showToast("Ajoute un e-mail client avant l'envoi.");
+    return;
+  }
+
+  doc.emailStatus = "prepared";
+  saveDocuments();
+  renderDocuments();
+
+  const mailto = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(doc.emailSubject)}&body=${encodeURIComponent(doc.emailBody)}`;
+  window.location.href = mailto;
+  showToast("E-mail préparé.");
+}
+
+function markDocumentSent(documentId) {
+  const doc = documentById(documentId);
+  if (!doc) return showToast("Document introuvable.");
+  doc.emailStatus = "sent";
+  saveDocuments();
+  renderDocuments();
+  showToast("Document marqué envoyé.");
+}
+
+function handleDocumentAction(event) {
+  const button = event.target.closest("[data-document-action]");
+  if (!button) return;
+  const card = event.target.closest("[data-document-id]");
+  if (!card) return;
+
+  const documentId = card.dataset.documentId;
+  if (button.dataset.documentAction === "pdf") openPrintableDocument(documentId);
+  if (button.dataset.documentAction === "email") prepareDocumentEmail(documentId);
+  if (button.dataset.documentAction === "sent") markDocumentSent(documentId);
 }
 
 function applyWorkflowDefaultsFromType() {
@@ -903,7 +1333,7 @@ filterRow.addEventListener("click", (event) => {
   if (!chip) return;
 
   activeFilter = chip.dataset.filter;
-  document.querySelectorAll(".filter-chip").forEach((item) => {
+  filterRow.querySelectorAll("[data-filter]").forEach((item) => {
     item.classList.toggle("is-active", item === chip);
   });
   renderOrders();
@@ -915,6 +1345,10 @@ document.querySelectorAll("[data-open-sheet]").forEach((button) => {
 
 document.querySelectorAll("[data-open-client-sheet]").forEach((button) => {
   button.addEventListener("click", openClientSheet);
+});
+
+document.querySelectorAll("[data-open-document-sheet]").forEach((button) => {
+  button.addEventListener("click", () => openDocumentSheet());
 });
 
 closeSheet.addEventListener("click", closeOrderSheet);
@@ -930,6 +1364,22 @@ clientSheet.addEventListener("click", (event) => {
   if (event.target === clientSheet) closeClientForm();
 });
 clientForm.addEventListener("submit", addClient);
+
+closeDocumentSheet.addEventListener("click", closeDocumentForm);
+documentSheet.addEventListener("click", (event) => {
+  if (event.target === documentSheet) closeDocumentForm();
+});
+documentForm.addEventListener("submit", addDocument);
+documentForm.elements.orderId.addEventListener("change", () => fillDocumentForm(documentForm.elements.orderId.value));
+documentForm.elements.documentType.addEventListener("change", () => fillDocumentForm(documentForm.elements.orderId.value, documentForm.elements.documentType.value));
+documentList.addEventListener("click", handleDocumentAction);
+documentFilterButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    activeDocumentFilter = button.dataset.documentFilter;
+    documentFilterButtons.forEach((item) => item.classList.toggle("is-active", item === button));
+    renderDocuments();
+  });
+});
 
 refreshButton.addEventListener("click", () => {
   render();
