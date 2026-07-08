@@ -1,7 +1,7 @@
 {
-  "name": "L'atelier des jours fleuris - Facturation",
+  "name": "L'atelier des jours fleuris - Espace Léana",
   "short_name": "Jours fleuris",
-  "start_url": "./index.html",
+  "start_url": "./app.html",
   "display": "standalone",
   "background_color": "#fffdf7",
   "theme_color": "#b9dce8",

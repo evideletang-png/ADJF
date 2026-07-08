@@ -81,6 +81,8 @@ button {
 .task-card,
 .order-card,
 .document-card,
+.lead-card,
+.content-card,
 .client-card,
 .metric-card {
   border: 1px solid var(--line);
@@ -290,7 +292,7 @@ textarea {
   top: 0;
   z-index: 4;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   margin: 0 -2px 16px;
   padding: 8px 0;
@@ -307,7 +309,7 @@ textarea {
   border-radius: 8px;
   background: transparent;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -360,20 +362,27 @@ textarea {
 }
 
 .ghost-action,
+.ghost-link,
 .small-stepper {
   min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 8px;
   padding: 0 12px;
   background: var(--leaf-soft);
   color: var(--leaf);
   font-size: 13px;
   font-weight: 800;
+  text-decoration: none;
 }
 
 .task-list,
 .order-list,
 .client-list,
 .document-list,
+.lead-list,
+.content-list,
 .settings-list {
   display: grid;
   gap: 10px;
@@ -382,6 +391,8 @@ textarea {
 .task-card,
 .order-card,
 .document-card,
+.lead-card,
+.content-card,
 .client-card {
   display: grid;
   gap: 12px;
@@ -391,6 +402,7 @@ textarea {
 
 .card-topline,
 .order-topline,
+.lead-topline,
 .client-topline {
   display: flex;
   align-items: flex-start;
@@ -405,12 +417,14 @@ textarea {
 
 .card-title,
 .order-title,
+.lead-title,
 .client-title {
   min-width: 0;
 }
 
 .card-title h3,
 .order-title h3,
+.lead-title h3,
 .client-title h3 {
   margin: 0 0 4px;
   font-size: 16px;
@@ -420,6 +434,7 @@ textarea {
 
 .card-title p,
 .order-title p,
+.lead-title p,
 .client-title p {
   margin: 0;
   color: var(--muted);
@@ -459,7 +474,8 @@ textarea {
 }
 
 .task-meta,
-.order-meta {
+.order-meta,
+.content-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
@@ -848,6 +864,8 @@ textarea {
   .order-list,
   .client-list,
   .document-list,
+  .lead-list,
+  .content-list,
   .settings-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
@@ -855,7 +873,9 @@ textarea {
 
   .task-card,
   .order-card,
-  .document-card {
+  .document-card,
+  .lead-card,
+  .content-card {
     align-content: start;
     min-height: 196px;
     padding: 15px;
@@ -908,6 +928,8 @@ textarea {
 
   .client-list,
   .document-list,
+  .lead-list,
+  .content-list,
   .settings-list {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }

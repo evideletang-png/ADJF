@@ -1,9 +1,15 @@
 # L'atelier des jours fleuris
 
-Prototype web de suivi de facturation pour une fleuriste.
+Prototype web pour une fleuriste : site public, demandes entrantes et espace privé de suivi commercial/facturation.
 
 ## Contenu
 
+- site public sur `index.html`
+- espace privé Léana sur `app.html`
+- page prestations, journal floral, FAQ et formulaire de demande
+- premières bases SEO / GEO : métadonnées, données structurées Florist, contenus orientés questions fréquentes
+- gestion locale de contenus site : articles, prestations, statut brouillon/publié
+- demandes du formulaire visibles dans l'espace privé
 - tableau de bord "Bonjour Léana"
 - accès utilisateur configurable au premier lancement
 - suivi des commandes, acomptes, factures et relances
@@ -19,4 +25,4 @@ Prototype web de suivi de facturation pour une fleuriste.
 
 ## Lancer localement
 
-Ouvrir `index.html` dans un navigateur.
+Ouvrir `index.html` pour le site public ou `app.html` pour l'espace privé.

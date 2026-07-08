@@ -12,6 +12,7 @@ const panels = {
   orders: document.querySelector("#ordersView"),
   clients: document.querySelector("#clientsView"),
   documents: document.querySelector("#documentsView"),
+  site: document.querySelector("#siteView"),
   settings: document.querySelector("#settingsView")
 };
 const metricGrid = document.querySelector("#metricGrid");
@@ -19,6 +20,9 @@ const taskList = document.querySelector("#taskList");
 const orderList = document.querySelector("#orderList");
 const clientList = document.querySelector("#clientList");
 const documentList = document.querySelector("#documentList");
+const leadList = document.querySelector("#leadList");
+const contentList = document.querySelector("#contentList");
+const siteMetricGrid = document.querySelector("#siteMetricGrid");
 const filterRow = document.querySelector("#filterRow");
 const documentFilterButtons = document.querySelectorAll("[data-document-filter]");
 const todayLabel = document.querySelector("#todayLabel");
@@ -36,6 +40,9 @@ const documentSheet = document.querySelector("#documentSheet");
 const closeDocumentSheet = document.querySelector("#closeDocumentSheet");
 const documentForm = document.querySelector("#documentForm");
 const documentOrderSelect = document.querySelector("#documentOrderSelect");
+const contentSheet = document.querySelector("#contentSheet");
+const closeContentSheet = document.querySelector("#closeContentSheet");
+const contentForm = document.querySelector("#contentForm");
 const refreshButton = document.querySelector("#refreshButton");
 const greetingTitle = document.querySelector("#greetingTitle");
 const profileName = document.querySelector("#profileName");
@@ -135,10 +142,14 @@ resetLegacyDemoData();
 const defaultClients = [];
 const defaultOrders = [];
 const defaultDocuments = [];
+const defaultSiteContent = [];
+const defaultSiteLeads = [];
 
 let clients = loadClients();
 let orders = loadOrders();
 let documents = loadDocuments();
+let siteContent = loadSiteContent();
+let siteLeads = loadSiteLeads();
 let activeFilter = "all";
 let activeDocumentFilter = "all";
 
@@ -181,6 +192,26 @@ function loadDocuments() {
   }
 }
 
+function loadSiteContent() {
+  const stored = localStorage.getItem("atelier-site-content");
+  if (!stored) return defaultSiteContent;
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return defaultSiteContent;
+  }
+}
+
+function loadSiteLeads() {
+  const stored = localStorage.getItem("atelier-site-leads");
+  if (!stored) return defaultSiteLeads;
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return defaultSiteLeads;
+  }
+}
+
 function saveClients() {
   localStorage.setItem("atelier-clients", JSON.stringify(clients));
 }
@@ -191,6 +222,14 @@ function saveOrders() {
 
 function saveDocuments() {
   localStorage.setItem("atelier-documents", JSON.stringify(documents));
+}
+
+function saveSiteContent() {
+  localStorage.setItem("atelier-site-content", JSON.stringify(siteContent));
+}
+
+function saveSiteLeads() {
+  localStorage.setItem("atelier-site-leads", JSON.stringify(siteLeads));
 }
 
 function escapeHtml(value) {
@@ -544,6 +583,7 @@ function render() {
   renderOrders();
   renderClients();
   renderDocuments();
+  renderSite();
 }
 
 function renderTotals() {
@@ -799,6 +839,98 @@ function documentCard(doc) {
       </div>
     </article>
   `;
+}
+
+function renderSite() {
+  const publishedArticles = siteContent.filter((item) => item.kind === "article" && item.status === "published").length;
+  const publishedServices = siteContent.filter((item) => item.kind === "service" && item.status === "published").length;
+  const draftContent = siteContent.filter((item) => item.status === "draft").length;
+  const newLeads = siteLeads.filter((lead) => lead.status === "new").length;
+
+  siteMetricGrid.innerHTML = [
+    ["Demandes", newLeads],
+    ["Articles publiés", publishedArticles],
+    ["Prestations", publishedServices],
+    ["Brouillons", draftContent]
+  ].map(([label, value]) => `
+    <article class="metric-card">
+      <span>${escapeHtml(label)}</span>
+      <strong>${value}</strong>
+    </article>
+  `).join("");
+
+  renderLeads();
+  renderSiteContent();
+}
+
+function renderLeads() {
+  if (!siteLeads.length) {
+    leadList.innerHTML = `<div class="empty-state">Aucune demande reçue depuis le formulaire public pour le moment.</div>`;
+    return;
+  }
+
+  leadList.innerHTML = siteLeads
+    .slice()
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .map((lead) => `
+      <article class="lead-card" data-lead-id="${escapeHtml(lead.id)}">
+        <div class="lead-topline">
+          <div class="lead-title">
+            <h3>${escapeHtml(lead.name)}</h3>
+            <p>${escapeHtml(lead.projectType || "Projet floral")} · ${escapeHtml(lead.location || "Lieu à préciser")}</p>
+          </div>
+          <span class="status-pill ${lead.status === "done" || lead.status === "client" ? "paid" : ""}">${leadStatusLabel(lead.status)}</span>
+        </div>
+        <div class="task-meta">
+          <span class="meta-chip">${escapeHtml(lead.email || "email à ajouter")}</span>
+          <span class="meta-chip">${escapeHtml(lead.phone || "téléphone à ajouter")}</span>
+          <span class="meta-chip">${lead.eventDate ? dateFormatter.format(parseDate(lead.eventDate)) : "Date à préciser"}</span>
+        </div>
+        <p>${escapeHtml(lead.message || "Aucun message complémentaire.")}</p>
+        <div class="quick-actions">
+          <button class="quick-action primary" type="button" data-lead-action="client">Créer client</button>
+          <button class="quick-action" type="button" data-lead-action="done">Traité</button>
+        </div>
+      </article>
+    `)
+    .join("");
+}
+
+function leadStatusLabel(status) {
+  if (status === "client") return "Client créé";
+  if (status === "done") return "Traité";
+  return "Nouveau";
+}
+
+function renderSiteContent() {
+  if (!siteContent.length) {
+    contentList.innerHTML = `<div class="empty-state">Aucun contenu personnalisé. Ajoute un article ou une prestation pour enrichir le site public.</div>`;
+    return;
+  }
+
+  contentList.innerHTML = siteContent
+    .slice()
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .map((item) => `
+      <article class="content-card" data-content-id="${escapeHtml(item.id)}">
+        <div class="order-topline">
+          <div class="order-title">
+            <h3>${escapeHtml(item.title)}</h3>
+            <p>${escapeHtml(item.kind === "service" ? "Prestation" : "Article")} · ${escapeHtml(item.keyword || "mot-clé à préciser")}</p>
+          </div>
+          <span class="status-pill ${item.status === "published" ? "paid" : ""}">${item.status === "published" ? "Publié" : "Brouillon"}</span>
+        </div>
+        <p>${escapeHtml(item.excerpt)}</p>
+        <div class="content-meta">
+          <span class="meta-chip">${escapeHtml(item.intent || "Intention")}</span>
+          <span class="meta-chip">${escapeHtml(item.location || "Zone à préciser")}</span>
+        </div>
+        <div class="quick-actions">
+          <button class="quick-action primary" type="button" data-content-action="toggle">${item.status === "published" ? "Brouillon" : "Publier"}</button>
+        </div>
+      </article>
+    `)
+    .join("");
 }
 
 function renderClientOptions() {
@@ -1301,6 +1433,109 @@ function addClient(event) {
   showToast("Client créé.");
 }
 
+function openContentSheet() {
+  contentSheet.classList.remove("is-hidden");
+  setTimeout(() => contentForm.elements.title.focus(), 80);
+}
+
+function closeContentForm() {
+  contentSheet.classList.add("is-hidden");
+  contentForm.reset();
+}
+
+function addSiteContent(event) {
+  event.preventDefault();
+  const data = new FormData(contentForm);
+  const title = data.get("title").trim();
+  const content = {
+    id: `${data.get("kind")}-${Date.now()}`,
+    kind: data.get("kind"),
+    title,
+    slug: slugify(title),
+    excerpt: data.get("excerpt").trim(),
+    keyword: data.get("keyword").trim(),
+    location: data.get("location").trim(),
+    intent: data.get("intent"),
+    status: data.get("status"),
+    createdAt: new Date().toISOString()
+  };
+
+  siteContent.unshift(content);
+  saveSiteContent();
+  closeContentForm();
+  setView("site");
+  render();
+  showToast(content.status === "published" ? "Contenu publié sur le site." : "Brouillon enregistré.");
+}
+
+function leadById(leadId) {
+  return siteLeads.find((lead) => lead.id === leadId);
+}
+
+function convertLeadToClient(lead) {
+  if (lead.status === "client") {
+    showToast("Client déjà créé depuis cette demande.");
+    return;
+  }
+
+  const exists = clients.some((client) => {
+    if (client.email && lead.email && client.email === lead.email) return true;
+    return !lead.email && client.name === lead.name;
+  });
+  if (!exists) {
+    const idBase = slugify(lead.name) || "client";
+    const id = clients.some((client) => client.id === idBase) ? `${idBase}-${Date.now()}` : idBase;
+    clients.unshift({
+      id,
+      name: lead.name,
+      email: lead.email,
+      phone: lead.phone,
+      profile: lead.projectType === "Événement professionnel" || lead.projectType === "Abonnement floral" ? "Professionnel" : "Particulier"
+    });
+    saveClients();
+  }
+
+  lead.status = "client";
+  saveSiteLeads();
+  render();
+  showToast(exists ? "Client déjà présent, demande liée mentalement." : "Client créé depuis la demande.");
+}
+
+function handleLeadAction(event) {
+  const button = event.target.closest("[data-lead-action]");
+  if (!button) return;
+  const card = event.target.closest("[data-lead-id]");
+  if (!card) return;
+  const lead = leadById(card.dataset.leadId);
+  if (!lead) return showToast("Demande introuvable.");
+
+  if (button.dataset.leadAction === "client") {
+    convertLeadToClient(lead);
+    return;
+  }
+
+  if (button.dataset.leadAction === "done") {
+    lead.status = "done";
+    saveSiteLeads();
+    render();
+    showToast("Demande marquée traitée.");
+  }
+}
+
+function handleContentAction(event) {
+  const button = event.target.closest("[data-content-action]");
+  if (!button) return;
+  const card = event.target.closest("[data-content-id]");
+  if (!card) return;
+  const item = siteContent.find((content) => content.id === card.dataset.contentId);
+  if (!item) return showToast("Contenu introuvable.");
+
+  item.status = item.status === "published" ? "draft" : "published";
+  saveSiteContent();
+  render();
+  showToast(item.status === "published" ? "Contenu publié." : "Contenu repassé en brouillon.");
+}
+
 accessForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   await unlockApp();
@@ -1351,6 +1586,10 @@ document.querySelectorAll("[data-open-document-sheet]").forEach((button) => {
   button.addEventListener("click", () => openDocumentSheet());
 });
 
+document.querySelectorAll("[data-open-content-sheet]").forEach((button) => {
+  button.addEventListener("click", openContentSheet);
+});
+
 closeSheet.addEventListener("click", closeOrderSheet);
 orderSheet.addEventListener("click", (event) => {
   if (event.target === orderSheet) closeOrderSheet();
@@ -1364,6 +1603,14 @@ clientSheet.addEventListener("click", (event) => {
   if (event.target === clientSheet) closeClientForm();
 });
 clientForm.addEventListener("submit", addClient);
+
+closeContentSheet.addEventListener("click", closeContentForm);
+contentSheet.addEventListener("click", (event) => {
+  if (event.target === contentSheet) closeContentForm();
+});
+contentForm.addEventListener("submit", addSiteContent);
+leadList.addEventListener("click", handleLeadAction);
+contentList.addEventListener("click", handleContentAction);
 
 closeDocumentSheet.addEventListener("click", closeDocumentForm);
 documentSheet.addEventListener("click", (event) => {
