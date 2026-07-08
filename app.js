@@ -23,8 +23,12 @@ const documentList = document.querySelector("#documentList");
 const leadList = document.querySelector("#leadList");
 const contentList = document.querySelector("#contentList");
 const siteMetricGrid = document.querySelector("#siteMetricGrid");
+const sitePreview = document.querySelector("#sitePreview");
+const siteInfoForm = document.querySelector("#siteInfoForm");
+const legalForm = document.querySelector("#legalForm");
 const filterRow = document.querySelector("#filterRow");
 const documentFilterButtons = document.querySelectorAll("[data-document-filter]");
+const siteContentFilterButtons = document.querySelectorAll("[data-site-content-filter]");
 const todayLabel = document.querySelector("#todayLabel");
 const totalOpen = document.querySelector("#totalOpen");
 const totalLate = document.querySelector("#totalLate");
@@ -144,14 +148,34 @@ const defaultOrders = [];
 const defaultDocuments = [];
 const defaultSiteContent = [];
 const defaultSiteLeads = [];
+const defaultSiteSettings = {
+  brandName: "L'atelier des jours fleuris",
+  heroTitle: "L'atelier des jours fleuris",
+  heroCopy: "Créations florales sensibles pour mariages, événements et lieux de vie professionnels. Une approche douce, structurée et pensée autour des saisons.",
+  serviceArea: "France",
+  promise: "Fleurs de saison, suivi clair, créations sur mesure",
+  contactEmail: "",
+  contactPhone: "",
+  seoTitle: "L'atelier des jours fleuris - Fleuriste mariage, événement et abonnements floraux",
+  seoDescription: "L'atelier des jours fleuris accompagne mariages, événements privés, événements professionnels et abonnements floraux avec des créations sensibles, saisonnières et sur mesure."
+};
+const defaultLegalPages = {
+  legalNotice: "",
+  terms: "",
+  privacy: ""
+};
 
 let clients = loadClients();
 let orders = loadOrders();
 let documents = loadDocuments();
 let siteContent = loadSiteContent();
 let siteLeads = loadSiteLeads();
+let siteSettings = loadSiteSettings();
+let legalPages = loadLegalPages();
 let activeFilter = "all";
 let activeDocumentFilter = "all";
+let activeSiteContentFilter = "all";
+let editingContentId = "";
 
 function resetLegacyDemoData() {
   if (localStorage.getItem("atelier-storage-version") === STORAGE_VERSION) return;
@@ -212,6 +236,26 @@ function loadSiteLeads() {
   }
 }
 
+function loadSiteSettings() {
+  const stored = localStorage.getItem("atelier-site-settings");
+  if (!stored) return { ...defaultSiteSettings };
+  try {
+    return { ...defaultSiteSettings, ...JSON.parse(stored) };
+  } catch {
+    return { ...defaultSiteSettings };
+  }
+}
+
+function loadLegalPages() {
+  const stored = localStorage.getItem("atelier-legal-pages");
+  if (!stored) return { ...defaultLegalPages };
+  try {
+    return { ...defaultLegalPages, ...JSON.parse(stored) };
+  } catch {
+    return { ...defaultLegalPages };
+  }
+}
+
 function saveClients() {
   localStorage.setItem("atelier-clients", JSON.stringify(clients));
 }
@@ -232,6 +276,14 @@ function saveSiteLeads() {
   localStorage.setItem("atelier-site-leads", JSON.stringify(siteLeads));
 }
 
+function saveSiteSettings() {
+  localStorage.setItem("atelier-site-settings", JSON.stringify(siteSettings));
+}
+
+function saveLegalPages() {
+  localStorage.setItem("atelier-legal-pages", JSON.stringify(legalPages));
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -248,6 +300,12 @@ function slugify(value) {
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+}
+
+function fillForm(form, values) {
+  Object.entries(values).forEach(([key, value]) => {
+    if (form.elements[key]) form.elements[key].value = value || "";
+  });
 }
 
 function formatDateInput(date) {
@@ -846,11 +904,13 @@ function renderSite() {
   const publishedServices = siteContent.filter((item) => item.kind === "service" && item.status === "published").length;
   const draftContent = siteContent.filter((item) => item.status === "draft").length;
   const newLeads = siteLeads.filter((lead) => lead.status === "new").length;
+  const legalReady = legalPages.legalNotice && legalPages.terms ? "OK" : "À compléter";
 
   siteMetricGrid.innerHTML = [
     ["Demandes", newLeads],
     ["Articles publiés", publishedArticles],
     ["Prestations", publishedServices],
+    ["Légal", legalReady],
     ["Brouillons", draftContent]
   ].map(([label, value]) => `
     <article class="metric-card">
@@ -859,8 +919,36 @@ function renderSite() {
     </article>
   `).join("");
 
+  fillForm(siteInfoForm, siteSettings);
+  fillForm(legalForm, legalPages);
+  renderSitePreview();
   renderLeads();
   renderSiteContent();
+}
+
+function renderSitePreview() {
+  sitePreview.innerHTML = `
+    <div class="preview-topbar">
+      <div class="preview-logo">
+        <img src="logo.jpg" alt="">
+        <span>${escapeHtml(siteSettings.brandName)}</span>
+      </div>
+      <span>Site public</span>
+    </div>
+    <div class="preview-hero">
+      <p class="eyebrow">Fleuriste événementielle</p>
+      <h3>${escapeHtml(siteSettings.heroTitle)}</h3>
+      <p>${escapeHtml(siteSettings.heroCopy)}</p>
+      <div class="preview-chips">
+        <span class="preview-chip">${escapeHtml(siteSettings.serviceArea || "Zone à préciser")}</span>
+        <span class="preview-chip">${escapeHtml(siteSettings.promise || "Promesse à préciser")}</span>
+      </div>
+    </div>
+    <div class="preview-chips">
+      <span class="preview-chip">${siteContent.filter((item) => item.status === "published").length} contenu(s) publié(s)</span>
+      <span class="preview-chip">${siteLeads.filter((lead) => lead.status === "new").length} demande(s) à traiter</span>
+    </div>
+  `;
 }
 
 function renderLeads() {
@@ -903,12 +991,18 @@ function leadStatusLabel(status) {
 }
 
 function renderSiteContent() {
-  if (!siteContent.length) {
+  const visibleContent = siteContent.filter((item) => {
+    if (activeSiteContentFilter === "all") return true;
+    if (activeSiteContentFilter === "draft") return item.status === "draft";
+    return item.kind === activeSiteContentFilter;
+  });
+
+  if (!visibleContent.length) {
     contentList.innerHTML = `<div class="empty-state">Aucun contenu personnalisé. Ajoute un article ou une prestation pour enrichir le site public.</div>`;
     return;
   }
 
-  contentList.innerHTML = siteContent
+  contentList.innerHTML = visibleContent
     .slice()
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .map((item) => `
@@ -924,9 +1018,13 @@ function renderSiteContent() {
         <div class="content-meta">
           <span class="meta-chip">${escapeHtml(item.intent || "Intention")}</span>
           <span class="meta-chip">${escapeHtml(item.location || "Zone à préciser")}</span>
+          <span class="meta-chip">${escapeHtml(item.readingTime || "Lecture à préciser")}</span>
+          <span class="meta-chip">${escapeHtml(item.metaDescription ? "Méta prête" : "Méta à compléter")}</span>
         </div>
         <div class="quick-actions">
-          <button class="quick-action primary" type="button" data-content-action="toggle">${item.status === "published" ? "Brouillon" : "Publier"}</button>
+          <button class="quick-action primary" type="button" data-content-action="edit">Modifier</button>
+          <button class="quick-action" type="button" data-content-action="toggle">${item.status === "published" ? "Brouillon" : "Publier"}</button>
+          <button class="quick-action" type="button" data-content-action="duplicate">Dupliquer</button>
         </div>
       </article>
     `)
@@ -1433,7 +1531,28 @@ function addClient(event) {
   showToast("Client créé.");
 }
 
-function openContentSheet() {
+function openContentSheet(kind = "article", contentId = "") {
+  editingContentId = contentId;
+  const existing = siteContent.find((item) => item.id === contentId);
+  const initialKind = existing?.kind || kind || "article";
+
+  document.querySelector("#contentSheetTitle").textContent = existing ? "Modifier le contenu" : "Nouveau contenu";
+  contentForm.reset();
+  fillForm(contentForm, {
+    kind: initialKind,
+    title: existing?.title || "",
+    slug: existing?.slug || "",
+    excerpt: existing?.excerpt || "",
+    body: existing?.body || "",
+    keyword: existing?.keyword || "",
+    location: existing?.location || "",
+    metaTitle: existing?.metaTitle || "",
+    readingTime: existing?.readingTime || "",
+    metaDescription: existing?.metaDescription || "",
+    faq: existing?.faq || "",
+    intent: existing?.intent || "Conseil",
+    status: existing?.status || "published"
+  });
   contentSheet.classList.remove("is-hidden");
   setTimeout(() => contentForm.elements.title.focus(), 80);
 }
@@ -1441,31 +1560,75 @@ function openContentSheet() {
 function closeContentForm() {
   contentSheet.classList.add("is-hidden");
   contentForm.reset();
+  editingContentId = "";
 }
 
 function addSiteContent(event) {
   event.preventDefault();
   const data = new FormData(contentForm);
   const title = data.get("title").trim();
+  const existing = siteContent.find((item) => item.id === editingContentId);
   const content = {
-    id: `${data.get("kind")}-${Date.now()}`,
+    id: existing?.id || `${data.get("kind")}-${Date.now()}`,
     kind: data.get("kind"),
     title,
-    slug: slugify(title),
+    slug: data.get("slug").trim() || slugify(title),
     excerpt: data.get("excerpt").trim(),
+    body: data.get("body").trim(),
     keyword: data.get("keyword").trim(),
     location: data.get("location").trim(),
+    metaTitle: data.get("metaTitle").trim(),
+    metaDescription: data.get("metaDescription").trim(),
+    readingTime: data.get("readingTime").trim(),
+    faq: data.get("faq").trim(),
     intent: data.get("intent"),
     status: data.get("status"),
-    createdAt: new Date().toISOString()
+    createdAt: existing?.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   };
 
-  siteContent.unshift(content);
+  if (existing) {
+    siteContent = siteContent.map((item) => item.id === existing.id ? content : item);
+  } else {
+    siteContent.unshift(content);
+  }
   saveSiteContent();
   closeContentForm();
   setView("site");
   render();
-  showToast(content.status === "published" ? "Contenu publié sur le site." : "Brouillon enregistré.");
+  showToast(existing ? "Contenu mis à jour." : content.status === "published" ? "Contenu publié sur le site." : "Brouillon enregistré.");
+}
+
+function saveSiteInfo(event) {
+  event.preventDefault();
+  const data = new FormData(siteInfoForm);
+  siteSettings = {
+    brandName: data.get("brandName").trim(),
+    heroTitle: data.get("heroTitle").trim(),
+    heroCopy: data.get("heroCopy").trim(),
+    serviceArea: data.get("serviceArea").trim(),
+    promise: data.get("promise").trim(),
+    contactEmail: data.get("contactEmail").trim(),
+    contactPhone: data.get("contactPhone").trim(),
+    seoTitle: data.get("seoTitle").trim(),
+    seoDescription: data.get("seoDescription").trim()
+  };
+  saveSiteSettings();
+  renderSitePreview();
+  showToast("Infos du site enregistrées.");
+}
+
+function saveLegalInfo(event) {
+  event.preventDefault();
+  const data = new FormData(legalForm);
+  legalPages = {
+    legalNotice: data.get("legalNotice").trim(),
+    terms: data.get("terms").trim(),
+    privacy: data.get("privacy").trim()
+  };
+  saveLegalPages();
+  render();
+  showToast("Mentions légales et CGV enregistrées.");
 }
 
 function leadById(leadId) {
@@ -1530,10 +1693,35 @@ function handleContentAction(event) {
   const item = siteContent.find((content) => content.id === card.dataset.contentId);
   if (!item) return showToast("Contenu introuvable.");
 
-  item.status = item.status === "published" ? "draft" : "published";
-  saveSiteContent();
-  render();
-  showToast(item.status === "published" ? "Contenu publié." : "Contenu repassé en brouillon.");
+  if (button.dataset.contentAction === "edit") {
+    openContentSheet(item.kind, item.id);
+    return;
+  }
+
+  if (button.dataset.contentAction === "duplicate") {
+    const copy = {
+      ...item,
+      id: `${item.kind}-${Date.now()}`,
+      title: `${item.title} - copie`,
+      slug: `${item.slug || slugify(item.title)}-copie`,
+      status: "draft",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    siteContent.unshift(copy);
+    saveSiteContent();
+    render();
+    showToast("Contenu dupliqué en brouillon.");
+    return;
+  }
+
+  if (button.dataset.contentAction === "toggle") {
+    item.status = item.status === "published" ? "draft" : "published";
+    item.updatedAt = new Date().toISOString();
+    saveSiteContent();
+    render();
+    showToast(item.status === "published" ? "Contenu publié." : "Contenu repassé en brouillon.");
+  }
 }
 
 accessForm.addEventListener("submit", async (event) => {
@@ -1587,7 +1775,7 @@ document.querySelectorAll("[data-open-document-sheet]").forEach((button) => {
 });
 
 document.querySelectorAll("[data-open-content-sheet]").forEach((button) => {
-  button.addEventListener("click", openContentSheet);
+  button.addEventListener("click", () => openContentSheet(button.dataset.contentKind || "article"));
 });
 
 closeSheet.addEventListener("click", closeOrderSheet);
@@ -1609,8 +1797,17 @@ contentSheet.addEventListener("click", (event) => {
   if (event.target === contentSheet) closeContentForm();
 });
 contentForm.addEventListener("submit", addSiteContent);
+siteInfoForm.addEventListener("submit", saveSiteInfo);
+legalForm.addEventListener("submit", saveLegalInfo);
 leadList.addEventListener("click", handleLeadAction);
 contentList.addEventListener("click", handleContentAction);
+siteContentFilterButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    activeSiteContentFilter = button.dataset.siteContentFilter;
+    siteContentFilterButtons.forEach((item) => item.classList.toggle("is-active", item === button));
+    renderSiteContent();
+  });
+});
 
 closeDocumentSheet.addEventListener("click", closeDocumentForm);
 documentSheet.addEventListener("click", (event) => {

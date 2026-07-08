@@ -78,6 +78,8 @@ button {
 .access-panel,
 .profile-panel,
 .settings-row,
+.studio-panel,
+.legal-panel,
 .task-card,
 .order-card,
 .document-card,
@@ -174,6 +176,7 @@ textarea {
 
 .primary-action,
 .ghost-action,
+.ghost-link,
 .filter-chip,
 .quick-action,
 .small-stepper,
@@ -377,6 +380,13 @@ textarea {
   text-decoration: none;
 }
 
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .task-list,
 .order-list,
 .client-list,
@@ -398,6 +408,109 @@ textarea {
   gap: 12px;
   min-width: 0;
   padding: 13px;
+}
+
+.studio-layout {
+  display: grid;
+  gap: 12px;
+}
+
+.studio-panel,
+.legal-panel {
+  display: grid;
+  gap: 13px;
+  padding: 14px;
+}
+
+.studio-panel h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.site-preview {
+  display: grid;
+  align-content: space-between;
+  gap: 18px;
+  min-height: 360px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: linear-gradient(135deg, rgba(185, 220, 232, 0.72), rgba(255, 253, 247, 0.96));
+  padding: 18px;
+  overflow: hidden;
+}
+
+.preview-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.preview-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.preview-logo img {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.preview-logo span {
+  overflow-wrap: anywhere;
+}
+
+.preview-hero {
+  display: grid;
+  gap: 12px;
+  max-width: 560px;
+}
+
+.preview-hero h3 {
+  margin: 0;
+  font-size: clamp(28px, 6vw, 52px);
+  line-height: 0.95;
+  letter-spacing: 0;
+}
+
+.preview-hero p {
+  margin: 0;
+  color: #415653;
+  line-height: 1.45;
+}
+
+.preview-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.preview-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  border-radius: 999px;
+  padding: 0 9px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 780;
+}
+
+.content-card p,
+.lead-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .card-topline,
@@ -842,6 +955,11 @@ textarea {
     align-self: start;
   }
 
+  .studio-layout {
+    grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+    align-items: start;
+  }
+
   .metric-grid {
     grid-template-columns: repeat(4, minmax(112px, 1fr));
     gap: 12px;
@@ -882,7 +1000,8 @@ textarea {
   }
 
   .client-card,
-  .settings-row {
+  .settings-row,
+  .legal-panel {
     min-height: 94px;
   }
 

@@ -2,6 +2,36 @@ const serviceGrid = document.querySelector("#serviceGrid");
 const articleGrid = document.querySelector("#articleGrid");
 const leadForm = document.querySelector("#leadForm");
 const leadStatus = document.querySelector("#leadStatus");
+const siteBrandName = document.querySelector("#siteBrandName");
+const siteHeroTitle = document.querySelector("#siteHeroTitle");
+const siteHeroCopy = document.querySelector("#siteHeroCopy");
+const sitePromise = document.querySelector("#sitePromise");
+const siteGeoCopy = document.querySelector("#siteGeoCopy");
+const siteAreaCopy = document.querySelector("#siteAreaCopy");
+const siteContactCopy = document.querySelector("#siteContactCopy");
+const footerBrandName = document.querySelector("#footerBrandName");
+const footerDescription = document.querySelector("#footerDescription");
+const legalNoticeText = document.querySelector("#legalNoticeText");
+const termsText = document.querySelector("#termsText");
+const privacyText = document.querySelector("#privacyText");
+
+const defaultSiteSettings = {
+  brandName: "L'atelier des jours fleuris",
+  heroTitle: "L'atelier des jours fleuris",
+  heroCopy: "Créations florales sensibles pour mariages, événements et lieux de vie professionnels. Une approche douce, structurée et pensée autour des saisons.",
+  serviceArea: "France",
+  promise: "Fleurs de saison, suivi clair, créations sur mesure",
+  contactEmail: "",
+  contactPhone: "",
+  seoTitle: "L'atelier des jours fleuris - Fleuriste mariage, événement et abonnements floraux",
+  seoDescription: "L'atelier des jours fleuris accompagne mariages, événements privés, événements professionnels et abonnements floraux avec des créations sensibles, saisonnières et sur mesure."
+};
+
+const defaultLegalPages = {
+  legalNotice: "Les mentions légales seront complétées depuis l'espace Léana.",
+  terms: "Les conditions générales de vente seront complétées depuis l'espace Léana.",
+  privacy: "La politique de confidentialité sera complétée depuis l'espace Léana."
+};
 
 const defaultServices = [
   {
@@ -66,6 +96,22 @@ function storedPublishedContent() {
   }
 }
 
+function storedSiteSettings() {
+  try {
+    return { ...defaultSiteSettings, ...JSON.parse(localStorage.getItem("atelier-site-settings") || "{}") };
+  } catch {
+    return { ...defaultSiteSettings };
+  }
+}
+
+function storedLegalPages() {
+  try {
+    return { ...defaultLegalPages, ...JSON.parse(localStorage.getItem("atelier-legal-pages") || "{}") };
+  } catch {
+    return { ...defaultLegalPages };
+  }
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -114,7 +160,9 @@ function renderArticles() {
       title: item.title,
       category: item.intent || "Article",
       area: item.location || item.keyword || "Guide",
-      excerpt: item.excerpt
+      excerpt: item.excerpt,
+      body: item.body,
+      readingTime: item.readingTime
     }));
   const articles = [...customArticles, ...defaultArticles].slice(0, 6);
 
@@ -127,10 +175,37 @@ function renderArticles() {
         </div>
         <h3>${escapeHtml(article.title)}</h3>
         <p>${escapeHtml(article.excerpt)}</p>
+        ${article.body ? `<p class="article-body">${escapeHtml(article.body)}</p>` : ""}
       </div>
-      <a class="text-link" href="#demande">Préparer mon projet</a>
+      <div class="card-actions">
+        ${article.readingTime ? `<span class="tag">${escapeHtml(article.readingTime)}</span>` : ""}
+        <a class="text-link" href="#demande">Préparer mon projet</a>
+      </div>
     </article>
   `).join("");
+}
+
+function renderSiteSettings() {
+  const settings = storedSiteSettings();
+  const legal = storedLegalPages();
+  const contactParts = [settings.contactEmail, settings.contactPhone].filter(Boolean);
+
+  document.title = settings.seoTitle || defaultSiteSettings.seoTitle;
+  const metaDescription = document.querySelector('meta[name="description"]');
+  if (metaDescription) metaDescription.setAttribute("content", settings.seoDescription || defaultSiteSettings.seoDescription);
+
+  siteBrandName.textContent = settings.brandName;
+  siteHeroTitle.textContent = settings.heroTitle;
+  siteHeroCopy.textContent = settings.heroCopy;
+  sitePromise.textContent = settings.promise || defaultSiteSettings.promise;
+  siteGeoCopy.textContent = settings.seoDescription || defaultSiteSettings.seoDescription;
+  siteAreaCopy.textContent = settings.serviceArea ? `Zone desservie : ${settings.serviceArea}. Les contenus du site répondent aux questions utiles des clients et des moteurs de recherche.` : "Les contenus du site répondent aux questions fréquentes : budget floral, saisonnalité, délais de demande, acompte, organisation du jour J et choix des compositions.";
+  siteContactCopy.textContent = contactParts.length ? `Contact direct : ${contactParts.join(" · ")}. La demande sera aussi enregistrée dans le suivi ADJF de Léana.` : "La demande sera enregistrée dans le suivi ADJF de Léana pour préparer la réponse, le devis Indy et les prochaines étapes.";
+  footerBrandName.textContent = settings.brandName;
+  footerDescription.textContent = settings.promise || "Créations florales, mariages, événements et abonnements professionnels.";
+  legalNoticeText.textContent = legal.legalNotice || defaultLegalPages.legalNotice;
+  termsText.textContent = legal.terms || defaultLegalPages.terms;
+  privacyText.textContent = legal.privacy || defaultLegalPages.privacy;
 }
 
 function saveLead(lead) {
@@ -160,5 +235,6 @@ leadForm.addEventListener("submit", (event) => {
   leadStatus.textContent = "Demande enregistrée. Léana pourra la retrouver dans son espace ADJF.";
 });
 
+renderSiteSettings();
 renderServices();
 renderArticles();

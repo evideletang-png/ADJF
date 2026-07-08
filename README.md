@@ -8,7 +8,9 @@ Prototype web pour une fleuriste : site public, demandes entrantes et espace pri
 - espace privé Léana sur `app.html`
 - page prestations, journal floral, FAQ et formulaire de demande
 - premières bases SEO / GEO : métadonnées, données structurées Florist, contenus orientés questions fréquentes
-- gestion locale de contenus site : articles, prestations, statut brouillon/publié
+- studio éditorial local : identité du site, aperçu, articles de blog, prestations, statut brouillon/publié
+- champs SEO blog : slug, mot-clé, zone, méta titre, méta description, contenu long, FAQ
+- espace Mentions légales, CGV et confidentialité
 - demandes du formulaire visibles dans l'espace privé
 - tableau de bord "Bonjour Léana"
 - accès utilisateur configurable au premier lancement
