@@ -1,0 +1,32 @@
+# .htaccess — hébergement OVH (Apache). Copié tel quel dans dist/ au build.
+
+# Page 404 personnalisée (Astro génère /404.html)
+ErrorDocument 404 /404.html
+
+# Compression des fichiers texte
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml application/xml
+</IfModule>
+
+# Cache navigateur : long pour les assets versionnés (noms avec empreinte),
+# court/implicite pour le HTML afin que les mises à jour s'affichent vite.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/webp "access plus 1 month"
+  ExpiresByType image/svg+xml "access plus 1 month"
+</IfModule>
+
+# --- À ACTIVER une fois le certificat SSL OVH en place (décommenter) ---
+# Forcer HTTPS
+# RewriteEngine On
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+# Forcer la version www (optionnel)
+# RewriteEngine On
+# RewriteCond %{HTTP_HOST} ^atelierjf\.fr$ [NC]
+# RewriteRule ^(.*)$ https://www.atelierjf.fr/$1 [R=301,L]

@@ -1,0 +1,47 @@
+name: Déploiement OVH
+
+# Construit le site et l'envoie sur l'hébergement OVH par FTP,
+# à chaque push sur main (ou manuellement via l'onglet Actions).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Évite deux déploiements simultanés.
+concurrency:
+  group: deploy-ovh
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Construire le site (génère dist/)
+        run: npm run build
+
+      - name: Envoyer dist/ sur OVH (FTPS)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ftp.cluster129.hosting.ovh.net
+          protocol: ftps
+          port: 21
+          username: ${{ secrets.OVH_FTP_USERNAME }}
+          password: ${{ secrets.OVH_FTP_PASSWORD }}
+          # Contenu à publier = le dossier construit.
+          local-dir: ./dist/
+          # Dossier racine du site atelierjf.fr sur OVH.
+          # ⚠️ À vérifier dans OVH → « Multisite » : c'est le « Répertoire racine »
+          # associé à atelierjf.fr (souvent « www », parfois un sous-dossier).
+          server-dir: ./www/

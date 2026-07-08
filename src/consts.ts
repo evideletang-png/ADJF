@@ -5,7 +5,7 @@ export const SITE = {
   name: "L'atelier des jours fleuris",
   shortName: 'Les jours fleuris',
   // Domaine de production — à ajuster (doit rester cohérent avec astro.config.mjs).
-  url: 'https://www.atelierdesjoursfleuris.fr',
+  url: 'https://www.atelierjf.fr',
   tagline: 'Design floral sur mesure, sensible & de saison',
   description:
     "L'atelier des jours fleuris compose des fleurs sensibles et de saison pour les mariages, les événements privés, les événements professionnels et les abonnements floraux.",
@@ -14,7 +14,7 @@ export const SITE = {
   author: 'Léana',
 
   // Coordonnées publiques — à compléter.
-  email: 'contact@atelierdesjoursfleuris.fr',
+  email: 'contact@atelierjf.fr',
   phone: '',
   areaServed: 'France',
   city: '',
