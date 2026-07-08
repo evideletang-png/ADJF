@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p /Users/evideletang/Downloads/ADJF-main/public)",
+      "Bash(cp /Users/evideletang/Downloads/ADJF-main/logo.jpg /Users/evideletang/Downloads/ADJF-main/public/logo.jpg)",
+      "Bash(npm install *)"
+    ]
+  }
+}

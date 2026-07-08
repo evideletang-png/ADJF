@@ -1,0 +1,100 @@
+---
+interface Props {
+  title: string;
+  excerpt: string;
+  href: string;
+  category?: string;
+  date?: Date;
+  readingTime?: string;
+  variant?: string;
+}
+const {
+  title,
+  excerpt,
+  href,
+  category,
+  date,
+  readingTime,
+  variant = '',
+} = Astro.props;
+
+const dateStr = date
+  ? new Intl.DateTimeFormat('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(date)
+  : '';
+---
+
+<a class="article-card reveal" href={href}>
+  <div class="article-media placeholder" data-variant={variant}>
+    <span class="placeholder-label">Photo — article</span>
+  </div>
+  <div class="article-body">
+    <div class="article-meta">
+      {category && <span class="article-cat">{category}</span>}
+      {readingTime && <span>{readingTime}</span>}
+    </div>
+    <h3>{title}</h3>
+    <p>{excerpt}</p>
+    {dateStr && <time class="article-date" datetime={date?.toISOString()}>{dateStr}</time>}
+  </div>
+</a>
+
+<style>
+  .article-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    color: var(--ink);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .article-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+  }
+  .article-media {
+    aspect-ratio: 16 / 10;
+    display: flex;
+  }
+  .article-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px 22px 22px;
+    flex: 1;
+  }
+  .article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .article-cat {
+    color: var(--accent);
+  }
+  .article-body h3 {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+  .article-body p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.94rem;
+  }
+  .article-date {
+    margin-top: auto;
+    padding-top: 4px;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+</style>

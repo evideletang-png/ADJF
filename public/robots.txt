@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Sitemap généré par @astrojs/sitemap au build
+Sitemap: https://www.atelierdesjoursfleuris.fr/sitemap-index.xml

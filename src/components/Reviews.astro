@@ -1,0 +1,181 @@
+---
+import Carousel from './Carousel.astro';
+import { SITE } from '../consts';
+
+/*
+ * MAQUETTE — avis clients.
+ * En Phase 3, ce composant sera alimenté par l'API Google Places
+ * (récupération côté serveur + mise en cache), et une donnée structurée
+ * AggregateRating sera émise sur la fiche Florist. Pour l'instant, les
+ * avis ci-dessous sont des exemples et un bandeau le signale honnêtement.
+ */
+const reviews = [
+  {
+    author: 'Camille & Clément',
+    rating: 5,
+    text: "Léana a capté exactement l'ambiance que nous imaginions pour notre mariage. Des fleurs d'une fraîcheur incroyable et un sens du détail rare.",
+    date: 'Mai 2026',
+  },
+  {
+    author: 'Maison Pisco',
+    rating: 5,
+    text: 'Nos compositions hebdomadaires subliment la boutique. Toujours de saison, toujours justes.',
+    date: 'Avril 2026',
+  },
+  {
+    author: 'Sophie D.',
+    rating: 5,
+    text: "Un atelier passionnant et une vraie générosité dans la transmission. On repart des étoiles plein les yeux.",
+    date: 'Mars 2026',
+  },
+  {
+    author: 'Domaine des Tilleuls',
+    rating: 5,
+    text: 'Scénographie florale à couper le souffle pour notre séminaire. Ponctuelle, à l’écoute, vraiment professionnelle.',
+    date: 'Février 2026',
+  },
+  {
+    author: 'Anaïs & Théo',
+    rating: 4,
+    text: 'Superbe travail pour notre cérémonie. Quelques ajustements de dernière minute gérés avec beaucoup de calme.',
+    date: 'Janvier 2026',
+  },
+];
+
+const count = reviews.length;
+const average = (
+  reviews.reduce((sum, r) => sum + r.rating, 0) / count
+).toFixed(1);
+const averageStars = Math.round(Number(average));
+const connected = Boolean(SITE.googleBusinessUrl);
+---
+
+<div class="reviews">
+  <div class="reviews-head">
+    <div>
+      <p class="eyebrow">Avis clients</p>
+      <h2>Ce qu'elles et ils en disent</h2>
+    </div>
+    <div class="reviews-score">
+      <span class="score-num">{average}</span>
+      <span class="stars" aria-hidden="true">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <span class={i < averageStars ? 'on' : ''}>★</span>
+        ))}
+      </span>
+      <span class="score-meta">
+        {count} avis&nbsp;·&nbsp;
+        {connected ? (
+          <a href={SITE.googleBusinessUrl} target="_blank" rel="noreferrer">Google</a>
+        ) : (
+          'Google'
+        )}
+      </span>
+    </div>
+  </div>
+
+  <Carousel label="Avis clients" itemWidth="min(90%, 360px)">
+    {
+      reviews.map((r) => (
+        <blockquote class="review-card">
+          <span class="stars" aria-label={`Note : ${r.rating} sur 5`}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <span class={i < r.rating ? 'on' : ''} aria-hidden="true">★</span>
+            ))}
+          </span>
+          <p class="review-text">{r.text}</p>
+          <footer class="review-foot">
+            <cite>{r.author}</cite>
+            <span>{r.date} · via Google</span>
+          </footer>
+        </blockquote>
+      ))
+    }
+  </Carousel>
+
+  {
+    !connected && (
+      <p class="reviews-note">
+        Avis affichés à titre d'exemple. La connexion aux avis Google réels est
+        prévue en Phase&nbsp;3 (API Google Places).
+      </p>
+    )
+  }
+</div>
+
+<style>
+  .reviews-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 26px;
+  }
+  .reviews-head h2 {
+    margin: 0;
+  }
+  .reviews-score {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .score-num {
+    font-family: var(--serif);
+    font-size: 2.4rem;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .stars {
+    letter-spacing: 2px;
+    color: var(--line);
+  }
+  .stars .on {
+    color: var(--ochre);
+  }
+  .score-meta {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .review-card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    height: 100%;
+    margin: 0;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+  }
+  .review-card .stars {
+    font-size: 0.95rem;
+  }
+  .review-text {
+    font-family: var(--serif);
+    font-size: 1.08rem;
+    line-height: 1.5;
+    color: var(--ink);
+    margin: 0;
+    flex: 1;
+  }
+  .review-foot {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .review-foot cite {
+    font-style: normal;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .reviews-note {
+    margin: 16px 0 0;
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+</style>

@@ -1,0 +1,230 @@
+---
+import Sprig from './Sprig.astro';
+
+// Diapositives du hero. Les visuels sont pour l'instant des dégradés
+// (marque-place) : il suffira d'ajouter de vraies photos en Phase 4.
+const slides = [
+  {
+    variant: 'iris',
+    eyebrow: 'Fleuriste événementielle',
+    title: 'Design floral <em>sur mesure</em>, sensible & de saison',
+    copy: 'Des compositions pensées autour du lieu, de la lumière et des fleurs du moment.',
+  },
+  {
+    variant: '',
+    eyebrow: 'Mariages',
+    title: 'Des mariages fleuris <em>comme des jardins</em>',
+    copy: 'Bouquet, cérémonie, tables et scénographie : un fil floral cohérent, du oui au dernier verre.',
+  },
+  {
+    variant: 'sky',
+    eyebrow: 'Événements & entreprises',
+    title: 'Fleurir les lieux qui <em>reçoivent</em>',
+    copy: 'Réceptions, boutiques, bureaux : abonnements et créations ponctuelles au rythme des saisons.',
+  },
+];
+---
+
+<section class="hero" aria-roledescription="diaporama" aria-label="Présentation de l'atelier">
+  <div class="hero-slides">
+    {
+      slides.map((s, i) => (
+        <article
+          class="hero-slide"
+          data-slide={i}
+          aria-hidden={i === 0 ? 'false' : 'true'}
+        >
+          <div class="hero-bg placeholder" data-variant={s.variant} />
+          <div class="container hero-inner">
+            <div class="hero-text">
+              <p class="eyebrow hero-eyebrow">{s.eyebrow}</p>
+              <h1 set:html={s.title} />
+              <p class="hero-copy">{s.copy}</p>
+              <div class="hero-actions">
+                <a class="btn btn-primary" href="/contact">Demander un devis</a>
+                <a class="btn btn-ghost" href="/prestations">Voir les prestations</a>
+              </div>
+            </div>
+          </div>
+        </article>
+      ))
+    }
+  </div>
+
+  <div class="hero-sprig" aria-hidden="true"><Sprig size={148} animate /></div>
+
+  <div class="hero-dots" role="tablist" aria-label="Choisir une diapositive">
+    {
+      slides.map((_, i) => (
+        <button
+          class="hero-dot"
+          type="button"
+          role="tab"
+          data-dot={i}
+          aria-selected={i === 0 ? 'true' : 'false'}
+          aria-label={`Diapositive ${i + 1}`}
+        />
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    isolation: isolate;
+  }
+  .hero-slides {
+    position: relative;
+    min-height: min(78vh, 720px);
+  }
+  .hero-slide {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.9s ease;
+    pointer-events: none;
+  }
+  .hero-slide[aria-hidden='false'] {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    border-radius: 0;
+    z-index: -1;
+  }
+  .hero-bg::after {
+    background: linear-gradient(
+      100deg,
+      rgba(251, 252, 253, 0.96) 0%,
+      rgba(251, 252, 253, 0.76) 42%,
+      rgba(251, 252, 253, 0.14) 100%
+    );
+  }
+  .hero-inner {
+    padding-block: clamp(40px, 8vw, 80px);
+  }
+  .hero-text {
+    max-width: 640px;
+    color: var(--ink);
+  }
+  .hero-eyebrow {
+    color: var(--accent);
+  }
+  .hero-text h1 {
+    font-size: var(--fs-display);
+    color: var(--ink);
+    margin-bottom: 18px;
+  }
+  .hero-text h1 :global(em) {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .hero-copy {
+    font-size: var(--fs-lead);
+    color: var(--muted);
+    max-width: 48ch;
+    margin-bottom: 28px;
+  }
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .hero-actions .btn-ghost {
+    color: var(--ink);
+    border-color: var(--line);
+    background: var(--surface);
+  }
+  .hero-actions .btn-ghost:hover {
+    border-color: var(--accent);
+    color: var(--accent-strong);
+  }
+
+  .hero-sprig {
+    position: absolute;
+    right: clamp(16px, 4vw, 54px);
+    bottom: 72px;
+    color: #7fb3d1;
+    z-index: 2;
+  }
+  .hero-dots {
+    position: absolute;
+    left: 50%;
+    bottom: 26px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 3;
+  }
+  .hero-dot {
+    width: 34px;
+    height: 4px;
+    border: 0;
+    border-radius: 2px;
+    background: rgba(59, 70, 88, 0.22);
+    transition: background 0.25s ease;
+  }
+  .hero-dot[aria-selected='true'] {
+    background: var(--accent);
+  }
+
+  @media (max-width: 620px) {
+    .hero-slides {
+      min-height: 78vh;
+    }
+    .hero-sprig {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const hero = document.querySelector<HTMLElement>('.hero');
+  if (hero) {
+    const slides = Array.from(hero.querySelectorAll<HTMLElement>('.hero-slide'));
+    const dots = Array.from(hero.querySelectorAll<HTMLButtonElement>('.hero-dot'));
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let index = 0;
+    let timer: number | undefined;
+
+    const show = (i: number) => {
+      index = (i + slides.length) % slides.length;
+      slides.forEach((s, n) =>
+        s.setAttribute('aria-hidden', n === index ? 'false' : 'true')
+      );
+      dots.forEach((d, n) =>
+        d.setAttribute('aria-selected', n === index ? 'true' : 'false')
+      );
+    };
+
+    const start = () => {
+      if (reduce || slides.length < 2) return;
+      stop();
+      timer = window.setInterval(() => show(index + 1), 6000);
+    };
+    const stop = () => {
+      if (timer) window.clearInterval(timer);
+    };
+
+    dots.forEach((d, n) =>
+      d.addEventListener('click', () => {
+        show(n);
+        start();
+      })
+    );
+    hero.addEventListener('mouseenter', stop);
+    hero.addEventListener('mouseleave', start);
+    hero.addEventListener('focusin', stop);
+    hero.addEventListener('focusout', start);
+    document.addEventListener('visibilitychange', () =>
+      document.hidden ? stop() : start()
+    );
+
+    start();
+  }
+</script>

@@ -1,0 +1,71 @@
+---
+interface Props {
+  title: string;
+  excerpt: string;
+  href: string;
+  tags?: string[];
+  variant?: string;
+}
+const { title, excerpt, href, tags = [], variant = '' } = Astro.props;
+---
+
+<a class="service-card reveal" href={href}>
+  <div class="service-media placeholder" data-variant={variant}>
+    <span class="placeholder-label">Photo — {title}</span>
+  </div>
+  <div class="service-body">
+    <h3>{title}</h3>
+    <p>{excerpt}</p>
+    {
+      tags.length > 0 && (
+        <div class="tag-list">
+          {tags.map((t) => (
+            <span class="tag">{t}</span>
+          ))}
+        </div>
+      )
+    }
+    <span class="btn-link">Découvrir</span>
+  </div>
+</a>
+
+<style>
+  .service-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    color: var(--ink);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .service-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+  }
+  .service-media {
+    aspect-ratio: 4 / 3;
+    display: flex;
+  }
+  .service-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 22px 24px 24px;
+    flex: 1;
+  }
+  .service-body h3 {
+    margin: 0;
+  }
+  .service-body p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .service-body .btn-link {
+    margin-top: auto;
+    padding-top: 4px;
+  }
+</style>

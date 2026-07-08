@@ -1,0 +1,71 @@
+---
+// Motif marguerite (comme le logo). Décoratif.
+// `animate` : la fleur se dessine au chargement (trait progressif),
+// désactivé si l'utilisateur préfère réduire les animations.
+interface Props {
+  size?: number;
+  class?: string;
+  animate?: boolean;
+}
+const { size = 80, class: className = '', animate = false } = Astro.props;
+---
+
+<svg
+  class={`sprig ${className}${animate ? ' is-animated' : ''}`}
+  width={size}
+  viewBox="0 0 80 150"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.5"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  role="presentation"
+>
+  <path d="M40 140 C 41 112 39 88 40 64" />
+  <path d="M40 106 C 27 102 19 92 18 80 C 32 82 39 92 40 106" />
+  <path d="M40 120 C 53 116 61 106 62 94 C 48 96 41 106 40 120" />
+  <ellipse cx="40" cy="29" rx="7" ry="13" />
+  <ellipse cx="40" cy="29" rx="7" ry="13" transform="rotate(60 40 44)" />
+  <ellipse cx="40" cy="29" rx="7" ry="13" transform="rotate(120 40 44)" />
+  <ellipse cx="40" cy="29" rx="7" ry="13" transform="rotate(180 40 44)" />
+  <ellipse cx="40" cy="29" rx="7" ry="13" transform="rotate(240 40 44)" />
+  <ellipse cx="40" cy="29" rx="7" ry="13" transform="rotate(300 40 44)" />
+  <circle cx="40" cy="44" r="5" />
+</svg>
+
+<style>
+  .sprig {
+    color: var(--accent);
+    height: auto;
+  }
+  .sprig :global(path),
+  .sprig :global(ellipse),
+  .sprig :global(circle) {
+    vector-effect: non-scaling-stroke;
+  }
+</style>
+
+<style is:global>
+  @media (prefers-reduced-motion: no-preference) {
+    /* La tige et les feuilles se dessinent d'abord… */
+    .sprig.is-animated path,
+    .sprig.is-animated ellipse,
+    .sprig.is-animated circle {
+      stroke-dasharray: 240;
+      stroke-dashoffset: 240;
+      animation: sprig-draw 1.6s ease forwards;
+    }
+    /* …puis la fleur éclot (pétales et cœur). */
+    .sprig.is-animated ellipse,
+    .sprig.is-animated circle {
+      animation-duration: 1.5s;
+      animation-delay: 0.55s;
+    }
+  }
+  @keyframes sprig-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+</style>

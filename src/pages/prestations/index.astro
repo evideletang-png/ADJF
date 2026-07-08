@@ -1,0 +1,56 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ServiceCard from '../../components/ServiceCard.astro';
+import { SITE } from '../../consts';
+
+const prestations = (
+  await getCollection('prestations', ({ data }) => !data.draft)
+).sort((a, b) => a.data.order - b.data.order);
+
+const breadcrumb = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Accueil', item: SITE.url },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Prestations',
+      item: new URL('/prestations', SITE.url).href,
+    },
+  ],
+};
+---
+
+<BaseLayout
+  title="Prestations florales"
+  description="Mariages, événements privés et professionnels, abonnements floraux et ateliers : découvrez toutes les prestations de L'atelier des jours fleuris."
+  jsonLd={[breadcrumb]}
+>
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Prestations</p>
+        <h1>Des fleurs pour chaque occasion</h1>
+        <p class="lead">
+          Chaque prestation est pensée sur mesure, au rythme des saisons. Choisissez
+          l’univers qui vous correspond — nous composons le reste ensemble.
+        </p>
+      </div>
+      <div class="grid-auto">
+        {
+          prestations.map((p) => (
+            <ServiceCard
+              title={p.data.title}
+              excerpt={p.data.description}
+              href={`/prestations/${p.id}`}
+              tags={p.data.tags.slice(0, 3)}
+              variant={p.data.variant}
+            />
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</BaseLayout>

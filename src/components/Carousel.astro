@@ -1,0 +1,125 @@
+---
+// Carrousel sans dépendance : défilement natif + accroche (scroll-snap),
+// boutons précédent/suivant, accessible au clavier et au toucher.
+// Les diapositives sont fournies via <slot />.
+interface Props {
+  label: string;
+  itemWidth?: string;
+  class?: string;
+}
+const {
+  label,
+  itemWidth = 'min(88%, 380px)',
+  class: className = '',
+} = Astro.props;
+---
+
+<section
+  class={`adjf-carousel ${className}`}
+  aria-roledescription="carrousel"
+  aria-label={label}
+  style={`--carousel-item-w:${itemWidth}`}
+>
+  <div class="carousel-track" tabindex="0">
+    <slot />
+  </div>
+  <div class="carousel-controls" aria-hidden="true">
+    <button class="carousel-btn" data-dir="prev" type="button" aria-label="Diapositive précédente">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+    </button>
+    <button class="carousel-btn" data-dir="next" type="button" aria-label="Diapositive suivante">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+    </button>
+  </div>
+</section>
+
+<style>
+  .adjf-carousel {
+    position: relative;
+  }
+  .carousel-track {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    padding: 4px 4px 12px;
+    margin: -4px -4px 0;
+    scrollbar-width: none;
+  }
+  .carousel-track::-webkit-scrollbar {
+    display: none;
+  }
+  .carousel-controls {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 14px;
+  }
+  .adjf-carousel.no-scroll .carousel-controls {
+    display: none;
+  }
+  .carousel-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    transition: border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+  }
+  .carousel-btn:hover:not([disabled]) {
+    border-color: var(--accent);
+    color: var(--accent-strong);
+  }
+  .carousel-btn[disabled] {
+    opacity: 0.35;
+    cursor: default;
+  }
+</style>
+
+{/* Dimensionne les diapositives fournies par le consommateur */}
+<style is:global>
+  .adjf-carousel .carousel-track > * {
+    flex: 0 0 var(--carousel-item-w);
+    scroll-snap-align: start;
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('.adjf-carousel').forEach((car) => {
+    const track = car.querySelector<HTMLElement>('.carousel-track');
+    const prev = car.querySelector<HTMLButtonElement>('[data-dir="prev"]');
+    const next = car.querySelector<HTMLButtonElement>('[data-dir="next"]');
+    if (!track) return;
+
+    const step = () => {
+      const first = track.querySelector<HTMLElement>(':scope > *');
+      const styles = getComputedStyle(track);
+      const gap = parseFloat(styles.columnGap || styles.gap || '16') || 16;
+      return first ? first.getBoundingClientRect().width + gap : track.clientWidth * 0.8;
+    };
+
+    prev?.addEventListener('click', () =>
+      track.scrollBy({ left: -step(), behavior: 'smooth' })
+    );
+    next?.addEventListener('click', () =>
+      track.scrollBy({ left: step(), behavior: 'smooth' })
+    );
+
+    const update = () => {
+      const max = track.scrollWidth - track.clientWidth - 2;
+      const noScroll = track.scrollWidth <= track.clientWidth + 4;
+      car.classList.toggle('no-scroll', noScroll);
+      if (prev) prev.disabled = track.scrollLeft <= 2;
+      if (next) next.disabled = track.scrollLeft >= max;
+    };
+
+    track.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  });
+</script>

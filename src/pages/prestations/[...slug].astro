@@ -1,0 +1,228 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE } from '../../consts';
+
+export async function getStaticPaths() {
+  const items = await getCollection('prestations', ({ data }) => !data.draft);
+  return items.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const { title, description, tags, priceFrom, variant, faq } = entry.data;
+
+const breadcrumb = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Accueil', item: SITE.url },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Prestations',
+      item: new URL('/prestations', SITE.url).href,
+    },
+    {
+      '@type': 'ListItem',
+      position: 3,
+      name: title,
+      item: new URL(`/prestations/${entry.id}`, SITE.url).href,
+    },
+  ],
+};
+const serviceLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  name: title,
+  description,
+  serviceType: title,
+  areaServed: SITE.areaServed,
+  provider: { '@type': 'Florist', name: SITE.name, url: SITE.url },
+};
+const faqLd =
+  faq.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faq.map((f) => ({
+          '@type': 'Question',
+          name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.a },
+        })),
+      }
+    : null;
+
+const jsonLd = [breadcrumb, serviceLd, ...(faqLd ? [faqLd] : [])];
+---
+
+<BaseLayout title={title} description={description} jsonLd={jsonLd}>
+  <article>
+    <header class="prestation-hero">
+      <div class="container prestation-hero-grid">
+        <div>
+          <nav class="crumbs" aria-label="Fil d'Ariane">
+            <a href="/">Accueil</a> <span aria-hidden="true">/</span>
+            <a href="/prestations">Prestations</a> <span aria-hidden="true">/</span>
+            <span>{title}</span>
+          </nav>
+          <h1>{title}</h1>
+          <p class="lead">{description}</p>
+          {
+            tags.length > 0 && (
+              <div class="tag-list">
+                {tags.map((t) => (
+                  <span class="tag">{t}</span>
+                ))}
+              </div>
+            )
+          }
+          <div class="prestation-actions">
+            <a class="btn btn-primary" href="/contact">Demander un devis</a>
+            {priceFrom && <span class="price">{priceFrom}</span>}
+          </div>
+        </div>
+        <div class="prestation-media placeholder" data-variant={variant}>
+          <span class="placeholder-label">Photo — {title}</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="section">
+      <div class="container prestation-body">
+        <div class="prose">
+          <Content />
+        </div>
+        <aside class="prestation-aside">
+          <div class="aside-card">
+            <h2>Envie d’en parler ?</h2>
+            <p>Décrivez votre projet, nous revenons vers vous sous 48 h avec une proposition sur mesure.</p>
+            <a class="btn btn-primary" href="/contact">Demander un devis</a>
+            <a class="btn-link" href="/realisations">Voir des réalisations</a>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    {
+      faq.length > 0 && (
+        <section class="section-tight faq">
+          <div class="container narrow">
+            <h2>Questions fréquentes</h2>
+            <div class="faq-list">
+              {faq.map((f, i) => (
+                <details open={i === 0}>
+                  <summary>{f.q}</summary>
+                  <p>{f.a}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+      )
+    }
+  </article>
+</BaseLayout>
+
+<style>
+  .prestation-hero {
+    background: var(--surface);
+    border-bottom: 1px solid var(--line-soft);
+    padding-block: clamp(32px, 5vw, 60px);
+  }
+  .prestation-hero-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: clamp(24px, 4vw, 52px);
+    align-items: center;
+  }
+  .crumbs {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .crumbs a {
+    color: var(--muted);
+  }
+  .crumbs a:hover {
+    color: var(--accent);
+  }
+  .prestation-hero h1 {
+    margin-bottom: 14px;
+  }
+  .prestation-actions {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-top: 22px;
+  }
+  .price {
+    font-weight: 650;
+    color: var(--muted);
+  }
+  .prestation-media {
+    aspect-ratio: 4 / 3;
+    display: flex;
+  }
+
+  .prestation-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: clamp(28px, 5vw, 64px);
+    align-items: start;
+  }
+  .aside-card {
+    position: sticky;
+    top: 96px;
+    display: grid;
+    gap: 14px;
+    padding: 26px;
+    background: var(--accent-tint);
+    border-radius: var(--radius);
+  }
+  .aside-card h2 {
+    font-size: 1.3rem;
+    margin: 0;
+  }
+  .aside-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .faq-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .faq-list details {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    padding: 16px 20px;
+  }
+  .faq-list summary {
+    cursor: pointer;
+    font-weight: 650;
+    color: var(--ink);
+  }
+  .faq-list p {
+    margin: 12px 0 0;
+    color: var(--muted);
+  }
+
+  @media (max-width: 880px) {
+    .prestation-hero-grid {
+      grid-template-columns: 1fr;
+    }
+    .prestation-media {
+      order: -1;
+    }
+    .prestation-body {
+      grid-template-columns: 1fr;
+    }
+    .aside-card {
+      position: static;
+    }
+  }
+</style>

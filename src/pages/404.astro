@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Sprig from '../components/Sprig.astro';
+---
+
+<BaseLayout title="Page introuvable" description="Cette page n'existe pas ou plus." noindex={true}>
+  <section class="section notfound">
+    <div class="container narrow text-center">
+      <Sprig size={78} animate />
+      <p class="eyebrow centered">Erreur 404</p>
+      <h1>Cette fleur a fané</h1>
+      <p class="lead">
+        La page que vous cherchez n’existe pas ou a été déplacée. Revenons vers des
+        jardins plus fleuris.
+      </p>
+      <div class="notfound-actions">
+        <a class="btn btn-primary" href="/">Retour à l’accueil</a>
+        <a class="btn btn-ghost" href="/prestations">Voir les prestations</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .notfound {
+    padding-block: clamp(60px, 12vw, 140px);
+  }
+  .notfound :global(.sprig) {
+    margin: 0 auto 10px;
+  }
+  .notfound .lead {
+    margin-inline: auto;
+  }
+  .notfound-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 26px;
+  }
+</style>

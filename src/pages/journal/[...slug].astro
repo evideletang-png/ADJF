@@ -1,0 +1,206 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE } from '../../consts';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  return posts.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const { title, description, pubDate, updatedDate, category, readingTime, variant, faq } =
+  entry.data;
+
+const url = new URL(`/journal/${entry.id}`, SITE.url).href;
+const dateStr = new Intl.DateTimeFormat('fr-FR', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+}).format(pubDate);
+
+const articleLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  description,
+  datePublished: pubDate.toISOString(),
+  dateModified: (updatedDate ?? pubDate).toISOString(),
+  author: { '@type': 'Person', name: SITE.author },
+  publisher: {
+    '@type': 'Organization',
+    name: SITE.name,
+    logo: {
+      '@type': 'ImageObject',
+      url: new URL('/logo.jpg', SITE.url).href,
+    },
+  },
+  mainEntityOfPage: url,
+  inLanguage: SITE.lang,
+};
+const breadcrumb = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Accueil', item: SITE.url },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Journal',
+      item: new URL('/journal', SITE.url).href,
+    },
+    { '@type': 'ListItem', position: 3, name: title, item: url },
+  ],
+};
+const faqLd =
+  faq.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faq.map((f) => ({
+          '@type': 'Question',
+          name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.a },
+        })),
+      }
+    : null;
+
+const jsonLd = [articleLd, breadcrumb, ...(faqLd ? [faqLd] : [])];
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  type="article"
+  publishedTime={pubDate.toISOString()}
+  jsonLd={jsonLd}
+>
+  <article class="post">
+    <div class="container narrow">
+      <nav class="crumbs" aria-label="Fil d'Ariane">
+        <a href="/">Accueil</a> <span aria-hidden="true">/</span>
+        <a href="/journal">Journal</a>
+      </nav>
+      <div class="article-meta">
+        <span class="cat">{category}</span>
+        <time datetime={pubDate.toISOString()}>{dateStr}</time>
+        {readingTime && <span>{readingTime}</span>}
+      </div>
+      <h1>{title}</h1>
+      <p class="lead post-lead">{description}</p>
+    </div>
+
+    <div class="container narrow">
+      <div class="post-cover placeholder" data-variant={variant}>
+        <span class="placeholder-label">Photo — {title}</span>
+      </div>
+    </div>
+
+    <div class="container narrow">
+      <div class="prose">
+        <Content />
+      </div>
+
+      {
+        faq.length > 0 && (
+          <section class="faq">
+            <h2>Questions fréquentes</h2>
+            <div class="faq-list">
+              {faq.map((f, i) => (
+                <details open={i === 0}>
+                  <summary>{f.q}</summary>
+                  <p>{f.a}</p>
+                </details>
+              ))}
+            </div>
+          </section>
+        )
+      }
+
+      <div class="post-foot">
+        <a class="btn-link" href="/journal">Retour au journal</a>
+        <a class="btn btn-primary" href="/contact">Demander un devis</a>
+      </div>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .post {
+    padding-block: clamp(28px, 5vw, 56px) clamp(48px, 7vw, 88px);
+  }
+  .post .container {
+    display: block;
+  }
+  .crumbs {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+  .crumbs a {
+    color: var(--muted);
+  }
+  .crumbs a:hover {
+    color: var(--accent);
+  }
+  .article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .article-meta .cat {
+    color: var(--accent);
+  }
+  .post h1 {
+    font-size: clamp(2rem, 1.4rem + 2.6vw, 3rem);
+    margin-bottom: 14px;
+  }
+  .post-lead {
+    max-width: 68ch;
+    margin-bottom: 28px;
+  }
+  .post-cover {
+    aspect-ratio: 16 / 8;
+    display: flex;
+    margin-bottom: clamp(28px, 4vw, 44px);
+  }
+  .faq {
+    margin-top: clamp(36px, 5vw, 56px);
+  }
+  .faq-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .faq-list details {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    padding: 16px 20px;
+  }
+  .faq-list summary {
+    cursor: pointer;
+    font-weight: 650;
+  }
+  .faq-list p {
+    margin: 12px 0 0;
+    color: var(--muted);
+  }
+  .post-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: clamp(40px, 6vw, 64px);
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+  }
+</style>

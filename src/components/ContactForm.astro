@@ -1,0 +1,301 @@
+---
+import { SITE } from '../consts';
+
+/*
+ * Formulaire de contact — MAQUETTE fonctionnelle (Phase 1).
+ * Aujourd'hui : validation, anti-spam (honeypot), et confirmation
+ * personnalisée selon le type de projet (aperçu du tri « intelligent »).
+ * En Phase 3 : envoi vers une fonction serverless -> API Gmail
+ * (classement, libellé, accusé de réception, brouillon de réponse).
+ */
+---
+
+<form class="contact-form" id="contact-form" novalidate>
+  <div class="field-grid">
+    <label class="field">
+      <span>Nom<i>*</i></span>
+      <input type="text" name="name" autocomplete="name" required />
+    </label>
+    <label class="field">
+      <span>Email<i>*</i></span>
+      <input type="email" name="email" autocomplete="email" required />
+    </label>
+  </div>
+
+  <div class="field-grid">
+    <label class="field">
+      <span>Téléphone</span>
+      <input type="tel" name="phone" autocomplete="tel" />
+    </label>
+    <label class="field">
+      <span>Type de projet</span>
+      <select name="projectType">
+        <option value="Mariage">Mariage</option>
+        <option value="Événement privé">Événement privé</option>
+        <option value="Événement professionnel">Événement professionnel</option>
+        <option value="Abonnement floral">Abonnement floral</option>
+        <option value="Atelier floral">Atelier floral</option>
+        <option value="Autre">Autre</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="field-grid">
+    <label class="field">
+      <span>Date souhaitée</span>
+      <input type="date" name="eventDate" />
+    </label>
+    <label class="field">
+      <span>Lieu ou ville</span>
+      <input type="text" name="location" placeholder="Domaine, salle, ville…" />
+    </label>
+  </div>
+
+  <label class="field">
+    <span>Budget indicatif</span>
+    <select name="budget">
+      <option value="">Je ne sais pas encore</option>
+      <option value="< 500 €">Moins de 500 €</option>
+      <option value="500 – 1 000 €">500 – 1 000 €</option>
+      <option value="1 000 – 2 500 €">1 000 – 2 500 €</option>
+      <option value="> 2 500 €">Plus de 2 500 €</option>
+    </select>
+  </label>
+
+  <label class="field">
+    <span>Votre projet<i>*</i></span>
+    <textarea name="message" rows="5" required placeholder="Ambiance, couleurs, nombre d'invités, inspirations…"></textarea>
+  </label>
+
+  {/* Anti-spam : champ piège, invisible pour les humains */}
+  <div class="hp" aria-hidden="true">
+    <label>Ne pas remplir<input type="text" name="entreprise" tabindex="-1" autocomplete="off" /></label>
+  </div>
+
+  <label class="consent">
+    <input type="checkbox" name="consent" required />
+    <span>J'accepte que mes informations soient utilisées pour être recontacté·e au sujet de ma demande.<i>*</i></span>
+  </label>
+
+  <div class="form-foot">
+    <button class="btn btn-primary" type="submit">Envoyer la demande</button>
+    <p class="form-hint">
+      Réponse sous 48&nbsp;h. Ou écrivez directement à <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+    </p>
+  </div>
+
+  <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+</form>
+
+<div class="form-success card" id="form-success" hidden>
+  <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5" /></svg>
+  <h3 id="success-title">Demande envoyée</h3>
+  <p id="success-message"></p>
+</div>
+
+<style>
+  .contact-form {
+    display: grid;
+    gap: 16px;
+  }
+  .field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .field {
+    display: grid;
+    gap: 7px;
+  }
+  .field > span {
+    font-size: 0.82rem;
+    font-weight: 650;
+    color: var(--muted);
+  }
+  .field i {
+    color: var(--rose);
+    font-style: normal;
+    margin-left: 2px;
+  }
+  .contact-form input,
+  .contact-form select,
+  .contact-form textarea {
+    width: 100%;
+    min-height: 50px;
+    padding: 0 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .contact-form textarea {
+    min-height: 130px;
+    padding: 12px 14px;
+    line-height: 1.5;
+    resize: vertical;
+  }
+  .contact-form input:focus,
+  .contact-form select:focus,
+  .contact-form textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-tint);
+  }
+  .contact-form input[aria-invalid='true'],
+  .contact-form textarea[aria-invalid='true'] {
+    border-color: var(--rose);
+  }
+  .hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  .consent {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  .consent input {
+    margin-top: 3px;
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+    accent-color: var(--accent);
+  }
+  .form-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+  }
+  .form-hint {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .form-status {
+    margin: 0;
+    min-height: 1.2em;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--rose);
+  }
+  .form-success {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    padding: 32px;
+    text-align: center;
+    align-items: center;
+    color: var(--ink);
+  }
+  .form-success[hidden] {
+    display: none;
+  }
+  .form-success.show {
+    display: flex;
+  }
+  .form-success svg {
+    color: var(--accent);
+  }
+  .form-success h3 {
+    margin: 0;
+  }
+  .form-success p {
+    margin: 0;
+    color: var(--muted);
+    max-width: 46ch;
+  }
+
+  @media (max-width: 560px) {
+    .field-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('#contact-form');
+  const status = document.querySelector<HTMLElement>('#form-status');
+  const success = document.querySelector<HTMLElement>('#form-success');
+  const successMsg = document.querySelector<HTMLElement>('#success-message');
+
+  // Confirmation adaptée au type de projet — aperçu du tri « intelligent »
+  // que la fonction Gmail réalisera côté serveur en Phase 3.
+  const byType: Record<string, string> = {
+    Mariage:
+      'Nous préparons une proposition florale pour votre mariage et revenons vers vous sous 48 h avec les prochaines étapes.',
+    'Événement privé':
+      'Votre demande pour un événement privé est bien notée. Léana vous recontacte sous 48 h.',
+    'Événement professionnel':
+      'Votre demande professionnelle a été transmise. Nous revenons vers vous sous 48 h avec une première proposition.',
+    'Abonnement floral':
+      'Merci ! Nous étudions votre besoin d’abonnement floral et vous répondons sous 48 h.',
+    'Atelier floral':
+      'Votre intérêt pour un atelier est enregistré. Nous vous envoyons les prochaines dates sous 48 h.',
+    Autre:
+      'Votre message a bien été transmis. Léana vous répond sous 48 h.',
+  };
+
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(form);
+
+      // Anti-spam : si le champ piège est rempli, on simule un succès sans rien faire.
+      if ((data.get('entreprise') as string)?.trim()) {
+        form.hidden = true;
+        if (success) {
+          success.classList.add('show');
+          success.removeAttribute('hidden');
+        }
+        return;
+      }
+
+      // Validation minimale
+      const required: Array<[string, string]> = [
+        ['name', 'votre nom'],
+        ['email', 'votre email'],
+        ['message', 'un message'],
+      ];
+      for (const [field, label] of required) {
+        const value = (data.get(field) as string)?.trim();
+        const el = form.querySelector<HTMLElement>(`[name="${field}"]`);
+        if (!value) {
+          if (status) status.textContent = `Merci d’indiquer ${label}.`;
+          el?.setAttribute('aria-invalid', 'true');
+          (el as HTMLElement | null)?.focus();
+          return;
+        }
+        el?.removeAttribute('aria-invalid');
+      }
+      const email = (data.get('email') as string).trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        if (status) status.textContent = 'Cet email semble incorrect.';
+        form.querySelector('[name="email"]')?.setAttribute('aria-invalid', 'true');
+        return;
+      }
+      if (!(form.querySelector('[name="consent"]') as HTMLInputElement)?.checked) {
+        if (status) status.textContent = 'Merci de cocher la case de consentement.';
+        return;
+      }
+
+      // MAQUETTE : ici, en Phase 3, on enverra `data` à /api/contact (Gmail).
+      const type = (data.get('projectType') as string) || 'Autre';
+      const name = (data.get('name') as string).trim().split(' ')[0];
+      if (status) status.textContent = '';
+      form.hidden = true;
+      if (success && successMsg) {
+        successMsg.textContent = `${name ? name + ', m' : 'M'}erci. ${byType[type] ?? byType['Autre']}`;
+        success.classList.add('show');
+        success.removeAttribute('hidden');
+        success.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+  }
+</script>

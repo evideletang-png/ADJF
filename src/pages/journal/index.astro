@@ -1,0 +1,145 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import { SITE } from '../../consts';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
+);
+const [featured, ...rest] = posts;
+
+const dateStr = (d: Date) =>
+  new Intl.DateTimeFormat('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(d);
+
+const breadcrumb = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Accueil', item: SITE.url },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Journal',
+      item: new URL('/journal', SITE.url).href,
+    },
+  ],
+};
+---
+
+<BaseLayout
+  title="Journal floral"
+  description="Conseils, inspirations et réponses aux questions fréquentes sur les fleurs de mariage, d'événement et d'entreprise."
+  jsonLd={[breadcrumb]}
+>
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Journal</p>
+        <h1>Conseils, inspirations & saisons</h1>
+        <p class="lead">
+          De quoi préparer votre projet floral sereinement, au fil des saisons et
+          des questions que l’on nous pose le plus.
+        </p>
+      </div>
+
+      {
+        featured && (
+          <a class="featured reveal" href={`/journal/${featured.id}`}>
+            <div class="featured-media placeholder" data-variant={featured.data.variant}>
+              <span class="placeholder-label">Photo — article</span>
+            </div>
+            <div class="featured-body">
+              <div class="article-meta">
+                <span class="cat">{featured.data.category}</span>
+                <span>{dateStr(featured.data.pubDate)}</span>
+                {featured.data.readingTime && <span>{featured.data.readingTime}</span>}
+              </div>
+              <h2>{featured.data.title}</h2>
+              <p>{featured.data.description}</p>
+              <span class="btn-link">Lire l’article</span>
+            </div>
+          </a>
+        )
+      }
+
+      {
+        rest.length > 0 && (
+          <div class="grid-auto more">
+            {rest.map((post) => (
+              <ArticleCard
+                title={post.data.title}
+                excerpt={post.data.description}
+                href={`/journal/${post.id}`}
+                category={post.data.category}
+                date={post.data.pubDate}
+                readingTime={post.data.readingTime}
+                variant={post.data.variant}
+              />
+            ))}
+          </div>
+        )
+      }
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .featured {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: clamp(20px, 4vw, 44px);
+    align-items: center;
+    padding: clamp(18px, 2.5vw, 26px);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--ink);
+    margin-bottom: clamp(28px, 4vw, 44px);
+    transition: box-shadow 0.25s ease;
+  }
+  .featured:hover {
+    box-shadow: var(--shadow);
+  }
+  .featured-media {
+    aspect-ratio: 4 / 3;
+    display: flex;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  .article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .article-meta .cat {
+    color: var(--accent);
+  }
+  .featured-body h2 {
+    font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2.1rem);
+    margin: 0 0 10px;
+  }
+  .featured-body p {
+    color: var(--muted);
+    margin: 0 0 16px;
+  }
+
+  @media (max-width: 780px) {
+    .featured {
+      grid-template-columns: 1fr;
+    }
+    .featured-media {
+      order: -1;
+    }
+  }
+</style>

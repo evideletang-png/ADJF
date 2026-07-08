@@ -1,0 +1,266 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import ServiceCard from '../components/ServiceCard.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import Reviews from '../components/Reviews.astro';
+import Carousel from '../components/Carousel.astro';
+import { SITE } from '../consts';
+
+const prestations = (
+  await getCollection('prestations', ({ data }) => !data.draft)
+).sort((a, b) => a.data.order - b.data.order);
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+  .slice(0, 3);
+
+// Réalisations — marque-places (vraies galeries en Phase 2/4).
+const realisations = [
+  { title: 'Mariage au domaine', tag: 'Mariage', variant: 'iris' },
+  { title: 'Cérémonie en château', tag: 'Mariage', variant: '' },
+  { title: 'Réception d’entreprise', tag: 'Professionnel', variant: 'sky' },
+  { title: 'Vitrine de saison', tag: 'Abonnement', variant: 'ochre' },
+  { title: 'Dîner privé', tag: 'Événement privé', variant: 'rose' },
+];
+
+const intro = [
+  {
+    title: 'Sur mesure',
+    copy: 'Un univers floral adapté au lieu, à la saison et à l’intention de votre événement.',
+  },
+  {
+    title: 'De saison',
+    copy: 'Des fleurs choisies pour leur fraîcheur, leurs teintes et leur cohérence naturelle.',
+  },
+  {
+    title: 'Suivi clair',
+    copy: 'Un calendrier précis, de la première idée au jour J, pour avancer l’esprit tranquille.',
+  },
+];
+---
+
+<BaseLayout
+  title="Fleuriste mariage, événementiel & abonnements floraux"
+  description={SITE.description}
+>
+  <Hero />
+
+  <!-- Positionnement -->
+  <section class="section-tight intro">
+    <div class="container">
+      <div class="intro-grid">
+        {
+          intro.map((item) => (
+            <div class="intro-item reveal">
+              <h2>{item.title}</h2>
+              <p>{item.copy}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Prestations -->
+  <section class="section" id="prestations">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Prestations</p>
+        <h2>Des fleurs pour les moments qui comptent</h2>
+        <p class="lead">
+          Du mariage à l’abonnement d’entreprise, chaque projet commence par une
+          conversation et se termine par des fleurs qui vous ressemblent.
+        </p>
+      </div>
+      <div class="grid-auto">
+        {
+          prestations.map((p) => (
+            <ServiceCard
+              title={p.data.title}
+              excerpt={p.data.description}
+              href={`/prestations/${p.id}`}
+              tags={p.data.tags.slice(0, 3)}
+              variant={p.data.variant}
+            />
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Citation -->
+  <section class="quote-band">
+    <div class="container">
+      <p class="reveal">
+        « Chaque projet commence par une conversation : le lieu, la saison, les
+        couleurs, l’émotion — puis une proposition florale claire. »
+      </p>
+    </div>
+  </section>
+
+  <!-- Réalisations -->
+  <section class="section" id="realisations">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Réalisations</p>
+        <h2>Quelques jours fleuris</h2>
+      </div>
+      <Carousel label="Réalisations récentes" itemWidth="min(84%, 340px)">
+        {
+          realisations.map((r) => (
+            <a class="realisation" href="/realisations">
+              <div class="realisation-media placeholder" data-variant={r.variant}>
+                <span class="placeholder-label">Photo — {r.title}</span>
+              </div>
+              <div class="realisation-cap">
+                <span class="tag">{r.tag}</span>
+                <span>{r.title}</span>
+              </div>
+            </a>
+          ))
+        }
+      </Carousel>
+      <p class="section-cta"><a class="btn-link" href="/realisations">Voir toutes les réalisations</a></p>
+    </div>
+  </section>
+
+  <!-- Avis -->
+  <section class="section reviews-section">
+    <div class="container">
+      <Reviews />
+    </div>
+  </section>
+
+  <!-- Journal -->
+  <section class="section" id="journal">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Journal</p>
+        <h2>Conseils, inspirations & réponses utiles</h2>
+      </div>
+      <div class="grid-auto">
+        {
+          posts.map((post) => (
+            <ArticleCard
+              title={post.data.title}
+              excerpt={post.data.description}
+              href={`/journal/${post.id}`}
+              category={post.data.category}
+              date={post.data.pubDate}
+              readingTime={post.data.readingTime}
+              variant={post.data.variant}
+            />
+          ))
+        }
+      </div>
+      <p class="section-cta"><a class="btn-link" href="/journal">Lire le journal</a></p>
+    </div>
+  </section>
+
+  <!-- Appel à l'action -->
+  <section class="section-tight">
+    <div class="container">
+      <div class="cta-band reveal">
+        <div>
+          <p class="eyebrow">Votre projet</p>
+          <h2>Parlons de vos fleurs</h2>
+          <p>Racontez-nous votre événement : nous préparons une proposition sur mesure, sans engagement.</p>
+        </div>
+        <a class="btn btn-primary" href="/contact">Demander un devis</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .intro-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .intro-item {
+    background: var(--bg);
+    padding: clamp(24px, 3vw, 38px);
+  }
+  .intro-item h2 {
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+  }
+  .intro-item p {
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .quote-band {
+    background: var(--accent-tint);
+    color: var(--ink);
+    padding-block: clamp(56px, 9vw, 104px);
+  }
+  .quote-band p {
+    font-family: var(--serif);
+    font-size: clamp(1.6rem, 1rem + 2.8vw, 3rem);
+    line-height: 1.18;
+    max-width: 20ch;
+    margin: 0;
+  }
+
+  .realisation {
+    display: block;
+    color: var(--ink);
+  }
+  .realisation-media {
+    aspect-ratio: 3 / 4;
+    display: flex;
+    transition: transform 0.3s ease;
+  }
+  .realisation:hover .realisation-media {
+    transform: translateY(-4px);
+  }
+  .realisation-cap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    font-size: 0.95rem;
+  }
+
+  .section-cta {
+    margin-top: 26px;
+  }
+
+  .reviews-section {
+    background: var(--surface);
+    border-block: 1px solid var(--line-soft);
+  }
+
+  .cta-band {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: clamp(28px, 4vw, 48px);
+    background: var(--accent-tint);
+    border-radius: var(--radius);
+  }
+  .cta-band h2 {
+    margin: 0 0 8px;
+  }
+  .cta-band p {
+    margin: 0;
+    color: var(--muted);
+    max-width: 48ch;
+  }
+
+  @media (max-width: 720px) {
+    .intro-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

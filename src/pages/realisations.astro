@@ -1,0 +1,131 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../consts';
+
+// Galeries — marque-places. En Phase 2, ces images deviendront des projets
+// éditables (avec carrousels par réalisation) ; en Phase 4, de vraies photos.
+const galleries = [
+  {
+    name: 'Mariages',
+    items: [
+      { title: 'Élopement en château', variant: 'iris' },
+      { title: 'Cérémonie champêtre', variant: '' },
+      { title: 'Bouquet de mariée', variant: 'rose' },
+      { title: 'Arche fleurie', variant: 'sky' },
+    ],
+  },
+  {
+    name: 'Événements privés & professionnels',
+    items: [
+      { title: 'Dîner intime', variant: 'rose' },
+      { title: 'Séminaire d’entreprise', variant: 'sky' },
+      { title: 'Soirée de lancement', variant: 'iris' },
+    ],
+  },
+  {
+    name: 'Abonnements & boutiques',
+    items: [
+      { title: 'Vitrine d’automne', variant: 'ochre' },
+      { title: 'Accueil d’hôtel', variant: '' },
+      { title: 'Composition d’accueil', variant: 'sky' },
+    ],
+  },
+];
+
+const breadcrumb = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Accueil', item: SITE.url },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Réalisations',
+      item: new URL('/realisations', SITE.url).href,
+    },
+  ],
+};
+---
+
+<BaseLayout
+  title="Réalisations"
+  description="Mariages, événements et abonnements : un aperçu des créations florales de L'atelier des jours fleuris."
+  jsonLd={[breadcrumb]}
+>
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Réalisations</p>
+        <h1>Quelques jours fleuris</h1>
+        <p class="lead">
+          Un aperçu de créations passées, du mariage intime à la scénographie
+          d’entreprise. Chaque projet est unique — le vôtre le sera aussi.
+        </p>
+      </div>
+
+      {
+        galleries.map((g) => (
+          <div class="gallery-block reveal">
+            <h2>{g.name}</h2>
+            <div class="grid-auto">
+              {g.items.map((it) => (
+                <figure class="gal placeholder" data-variant={it.variant}>
+                  <figcaption class="placeholder-label">Photo — {it.title}</figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        ))
+      }
+
+      <p class="gallery-note">
+        Galerie d’exemple. Les photos réelles des réalisations seront intégrées
+        prochainement (Phase&nbsp;4).
+      </p>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="container">
+      <div class="cta-band">
+        <div>
+          <p class="eyebrow">Votre projet</p>
+          <h2>Envie du même soin pour votre événement ?</h2>
+        </div>
+        <a class="btn btn-primary" href="/contact">Demander un devis</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .gallery-block {
+    margin-bottom: clamp(40px, 6vw, 72px);
+  }
+  .gallery-block h2 {
+    margin-bottom: 20px;
+  }
+  .gal {
+    aspect-ratio: 3 / 4;
+    display: flex;
+    margin: 0;
+  }
+  .gallery-note {
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .cta-band {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: clamp(28px, 4vw, 48px);
+    background: var(--accent-tint);
+    border-radius: var(--radius);
+  }
+  .cta-band h2 {
+    margin: 0;
+  }
+</style>

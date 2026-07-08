@@ -1,0 +1,154 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ContactForm from '../components/ContactForm.astro';
+import { SITE } from '../consts';
+
+const breadcrumb = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Accueil', item: SITE.url },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Contact',
+      item: new URL('/contact', SITE.url).href,
+    },
+  ],
+};
+---
+
+<BaseLayout
+  title="Contact & devis"
+  description="Racontez-nous votre projet floral : mariage, événement, abonnement ou atelier. Réponse sous 48 h, devis gratuit et sans engagement."
+  jsonLd={[breadcrumb]}
+>
+  <section class="section">
+    <div class="container contact-grid">
+      <div class="contact-main">
+        <div class="section-head">
+          <p class="eyebrow">Contact</p>
+          <h1>Parlons de votre projet</h1>
+          <p class="lead">
+            Quelques informations suffisent pour démarrer. Nous revenons vers vous
+            sous 48 h avec une première proposition, sans engagement.
+          </p>
+        </div>
+        <ContactForm />
+      </div>
+
+      <aside class="contact-aside">
+        <div class="info-card">
+          <h2>En direct</h2>
+          <ul>
+            <li>
+              <span class="label">Email</span>
+              <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+            </li>
+            {
+              SITE.phone && (
+                <li>
+                  <span class="label">Téléphone</span>
+                  <a href={`tel:${SITE.phone.replace(/\s/g, '')}`}>{SITE.phone}</a>
+                </li>
+              )
+            }
+            <li>
+              <span class="label">Zone desservie</span>
+              <span>{SITE.areaServed}</span>
+            </li>
+            <li>
+              <span class="label">Délai de réponse</span>
+              <span>Sous 48 h ouvrées</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="steps-card">
+          <h2>Comment ça se passe</h2>
+          <ol>
+            <li><strong>Vous racontez.</strong> Lieu, date, ambiance, budget indicatif.</li>
+            <li><strong>On propose.</strong> Une sélection florale claire et de saison.</li>
+            <li><strong>On fleurit.</strong> Création, installation, jour J.</li>
+          </ol>
+          <p class="smart-note">
+            Chaque demande est automatiquement organisée par type de projet pour une
+            réponse plus rapide et plus juste.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .contact-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: clamp(28px, 5vw, 64px);
+    align-items: start;
+  }
+  .contact-aside {
+    display: grid;
+    gap: 16px;
+    position: sticky;
+    top: 96px;
+  }
+  .info-card,
+  .steps-card {
+    padding: 24px 26px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  .info-card h2,
+  .steps-card h2 {
+    font-size: 1.15rem;
+    margin: 0 0 14px;
+  }
+  .info-card ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+  }
+  .info-card li {
+    display: grid;
+    gap: 2px;
+  }
+  .info-card .label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .steps-card ol {
+    margin: 0;
+    padding-left: 18px;
+    display: grid;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 0.94rem;
+  }
+  .steps-card strong {
+    color: var(--ink);
+  }
+  .smart-note {
+    margin: 16px 0 0;
+    padding-top: 14px;
+    border-top: 1px dashed var(--line);
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  @media (max-width: 900px) {
+    .contact-grid {
+      grid-template-columns: 1fr;
+    }
+    .contact-aside {
+      position: static;
+    }
+  }
+</style>
