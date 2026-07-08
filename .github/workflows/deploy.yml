@@ -31,17 +31,21 @@ jobs:
       - name: Construire le site (génère dist/)
         run: npm run build
 
-      - name: Envoyer dist/ sur OVH (FTPS)
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ftp.cluster129.hosting.ovh.net
-          protocol: ftps
-          port: 21
-          username: ${{ secrets.OVH_FTP_USERNAME }}
-          password: ${{ secrets.OVH_FTP_PASSWORD }}
-          # Contenu à publier = le dossier construit.
-          local-dir: ./dist/
-          # Dossier racine du site atelierjf.fr sur OVH.
-          # ⚠️ À vérifier dans OVH → « Multisite » : c'est le « Répertoire racine »
-          # associé à atelierjf.fr (souvent « www », parfois un sous-dossier).
-          server-dir: ./www/
+      # Envoi via SFTP (port 22) avec repli en FTP simple (port 21).
+      # OVH cluster129 refuse le FTPS explicite ; SFTP est la bonne méthode.
+      # ⚠️ Le dossier cible est ./www/ (racine du site sur OVH). Si atelierjf.fr
+      #    pointe vers un sous-dossier dans OVH → Multisite, remplacer ./www/.
+      - name: Déployer sur OVH (SFTP, repli FTP)
+        env:
+          OVH_USER: ${{ secrets.OVH_FTP_USERNAME }}
+          OVH_PASS: ${{ secrets.OVH_FTP_PASSWORD }}
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y lftp
+          CMDS="set sftp:auto-confirm yes; set ftp:ssl-allow no; set net:timeout 25; set net:max-retries 2; mirror -R --delete --parallel=3 --verbose ./dist/ ./www/; bye"
+          echo '-> Tentative SFTP (port 22)...'
+          if lftp -u "$OVH_USER","$OVH_PASS" sftp://ftp.cluster129.hosting.ovh.net:22 -e "$CMDS"; then
+            echo 'Deploiement SFTP reussi'
+          else
+            echo 'SFTP indisponible -> repli en FTP simple (port 21)...'
+            lftp -u "$OVH_USER","$OVH_PASS" ftp://ftp.cluster129.hosting.ovh.net:21 -e "$CMDS"
+          fi
