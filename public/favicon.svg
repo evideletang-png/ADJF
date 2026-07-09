@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="L'atelier des jours fleuris">
   <rect width="64" height="64" rx="13" fill="#b9dce8" />
-  <g transform="translate(14 -3) scale(0.45)" fill="none" stroke="#f4f2bf" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <g transform="translate(14 -3) scale(0.45)" fill="none" stroke="#f4f2bf" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
     <path d="M40 140 C 41 112 39 88 40 64" vector-effect="non-scaling-stroke" />
     <path d="M40 106 C 27 102 19 92 18 80 C 32 82 39 92 40 106" vector-effect="non-scaling-stroke" />
     <path d="M40 120 C 53 116 61 106 62 94 C 48 96 41 106 40 120" vector-effect="non-scaling-stroke" />
