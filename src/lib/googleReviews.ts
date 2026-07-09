@@ -67,38 +67,41 @@ export async function getReviews(): Promise<ReviewsData> {
 
   if (key && placeId) {
     try {
-      const url =
-        'https://maps.googleapis.com/maps/api/place/details/json' +
-        `?place_id=${encodeURIComponent(placeId)}` +
-        '&fields=rating,user_ratings_total,reviews' +
-        '&language=fr' +
-        `&key=${key}`;
-      const res = await fetch(url);
+      // Places API (New) — Place Details. La clé passe par un en-tête (pas dans l'URL).
+      const res = await fetch(
+        `https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}?languageCode=fr`,
+        {
+          headers: {
+            'X-Goog-Api-Key': key,
+            'X-Goog-FieldMask': 'rating,userRatingCount,reviews',
+          },
+        }
+      );
       const json: any = await res.json();
 
-      if (json.status === 'OK' && json.result) {
-        const r = json.result;
-        const reviews: Review[] = (r.reviews || [])
+      if (res.ok && (json.reviews || typeof json.rating === 'number')) {
+        const reviews: Review[] = (json.reviews || [])
           .map((rv: any) => ({
-            author: rv.author_name,
+            author: rv.authorAttribution?.displayName || 'Client Google',
             rating: rv.rating,
-            text: (rv.text || '').trim(),
-            date: rv.relative_time_description || '',
-            url: rv.author_url,
+            text: (rv.text?.text || rv.originalText?.text || '').trim(),
+            date: rv.relativePublishTimeDescription || '',
+            url: rv.authorAttribution?.uri,
           }))
           .filter((rv: Review) => rv.text);
 
         if (reviews.length) {
           cache = {
             reviews,
-            average: typeof r.rating === 'number' ? r.rating : average(reviews),
-            count: typeof r.user_ratings_total === 'number' ? r.user_ratings_total : reviews.length,
+            average: typeof json.rating === 'number' ? json.rating : average(reviews),
+            count:
+              typeof json.userRatingCount === 'number' ? json.userRatingCount : reviews.length,
             source: 'google',
           };
           return cache;
         }
       } else {
-        console.warn(`[avis Google] réponse API : ${json.status} ${json.error_message || ''}`);
+        console.warn('[avis Google] réponse API :', JSON.stringify(json).slice(0, 300));
       }
     } catch (e) {
       console.warn('[avis Google] échec de récupération, repli sur les exemples.', e);
