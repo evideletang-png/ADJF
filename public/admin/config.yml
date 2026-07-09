@@ -58,6 +58,12 @@ collections:
           - { label: Ville, name: city, widget: string, required: false }
           - { label: Lien Instagram, name: instagram, widget: string, required: false }
           - { label: Lien fiche Google (avis), name: googleBusinessUrl, widget: string, required: false }
+          - label: 'Fourchettes de budget (formulaire de contact)'
+            name: budgetOptions
+            widget: list
+            required: false
+            label_singular: Fourchette
+            hint: 'Les montants proposés dans le menu « Budget indicatif » du formulaire. Ajoutez, retirez ou réordonnez librement. « Je ne sais pas encore » reste toujours proposé en premier.'
 
   # ------------------------------------------------------------------ #
   - name: articles

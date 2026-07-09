@@ -10,5 +10,6 @@
   "areaServed": "France",
   "city": "",
   "instagram": "https://www.instagram.com/latelierdesjoursfleuris",
-  "googleBusinessUrl": ""
+  "googleBusinessUrl": "",
+  "budgetOptions": ["1 000 – 2 500 €", "2 500 – 5 000 €", "Plus de 5 000 €"]
 }

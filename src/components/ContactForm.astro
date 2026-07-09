@@ -1,5 +1,6 @@
 ---
 import Email from './Email.astro';
+import { SITE } from '../consts';
 
 /*
  * Formulaire de contact — MAQUETTE fonctionnelle (Phase 1).
@@ -8,6 +9,13 @@ import Email from './Email.astro';
  * En Phase 3 : envoi vers une fonction serverless -> API Gmail
  * (classement, libellé, accusé de réception, brouillon de réponse).
  */
+
+// Fourchettes de budget éditables au CMS (src/data/site.json -> budgetOptions).
+// On tolère aussi bien des chaînes simples que des objets {label}/{value}.
+const budgetOptions: string[] = (((SITE as any).budgetOptions ?? []) as any[])
+  .map((o) => (typeof o === 'string' ? o : o?.label ?? o?.value ?? ''))
+  .map((s) => String(s).trim())
+  .filter(Boolean);
 ---
 
 <form class="contact-form" id="contact-form" novalidate>
@@ -71,9 +79,7 @@ import Email from './Email.astro';
     <span>Budget indicatif</span>
     <select name="budget">
       <option value="">Je ne sais pas encore</option>
-      <option value="1 000 – 2 500 €">1 000 – 2 500 €</option>
-      <option value="2 500 – 5 000 €">2 500 – 5 000 €</option>
-      <option value="> 5 000 €">Plus de 5 000 €</option>
+      {budgetOptions.map((o) => <option value={o}>{o}</option>)}
     </select>
   </label>
 
@@ -184,26 +190,49 @@ import Email from './Email.astro';
   .ac-list[hidden] {
     display: none;
   }
-  .ac-option {
+  /* Les options sont créées en JS : styles en :global pour les atteindre
+     (le CSS scopé d'Astro ne cible que les éléments présents au build). */
+  .ac :global(.ac-option) {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 11px;
+    border-radius: 9px;
+    cursor: pointer;
+  }
+  .ac :global(.ac-option:hover),
+  .ac :global(.ac-option[aria-selected='true']) {
+    background: var(--accent-tint);
+  }
+  .ac :global(.ac-pin) {
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    color: var(--accent);
+  }
+  .ac :global(.ac-text) {
     display: flex;
     flex-direction: column;
     gap: 1px;
-    padding: 9px 11px;
-    border-radius: 8px;
-    cursor: pointer;
+    min-width: 0;
   }
-  .ac-option:hover,
-  .ac-option[aria-selected='true'] {
-    background: var(--accent-tint);
-  }
-  .ac-option strong {
+  .ac :global(.ac-option strong) {
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.94rem;
     color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
-  .ac-option small {
+  .ac :global(.ac-option small) {
     font-size: 0.78rem;
     color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
   .hp {
     position: absolute;
@@ -435,15 +464,19 @@ import Email from './Email.astro';
       });
     };
 
+    const PIN =
+      '<svg class="ac-pin" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>';
+
     const render = () => {
       if (!items.length) return close();
       list.innerHTML = items
         .map(
           (it, i) =>
             `<li class="ac-option" role="option" id="ac-opt-${i}" aria-selected="false">` +
-            `<strong>${esc(it.main)}</strong>` +
+            PIN +
+            `<span class="ac-text"><strong>${esc(it.main)}</strong>` +
             (it.sub ? `<small>${esc(it.sub)}</small>` : '') +
-            `</li>`
+            `</span></li>`
         )
         .join('');
       list.hidden = false;
@@ -471,12 +504,14 @@ import Email from './Email.astro';
           const p = f.properties || {};
           const isCity = p.type === 'municipality';
           const cityName = p.city ?? p.name ?? p.label;
+          // Département seul (2ᵉ élément du contexte « 41, Loir-et-Cher, Centre-Val de Loire »)
+          const dept = (p.context || '').split(',')[1]?.trim() || p.context || '';
           return {
             value: isCity && p.postcode ? `${cityName} (${p.postcode})` : p.label,
-            main: isCity ? cityName : p.label,
+            main: isCity ? cityName : p.name ?? p.label,
             sub: isCity
-              ? [p.postcode, p.context].filter(Boolean).join(' · ')
-              : p.context ?? '',
+              ? [p.postcode, dept].filter(Boolean).join(' · ')
+              : [p.postcode, p.city].filter(Boolean).join(' '),
           } as Item;
         });
         active = -1;
