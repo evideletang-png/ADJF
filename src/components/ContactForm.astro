@@ -45,20 +45,35 @@ import Email from './Email.astro';
       <span>Date souhaitée</span>
       <input type="date" name="eventDate" />
     </label>
-    <label class="field">
-      <span>Lieu ou ville</span>
-      <input type="text" name="location" placeholder="Domaine, salle, ville…" />
-    </label>
+    <div class="field">
+      <span id="cf-location-label">Lieu ou ville</span>
+      <div class="ac" data-ac>
+        <input
+          type="text"
+          name="location"
+          placeholder="Domaine, salle, ville…"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          role="combobox"
+          aria-labelledby="cf-location-label"
+          aria-autocomplete="list"
+          aria-expanded="false"
+          aria-controls="cf-location-list"
+        />
+        <ul class="ac-list" id="cf-location-list" role="listbox" aria-label="Suggestions d'adresses" hidden></ul>
+      </div>
+    </div>
   </div>
 
   <label class="field">
     <span>Budget indicatif</span>
     <select name="budget">
       <option value="">Je ne sais pas encore</option>
-      <option value="< 500 €">Moins de 500 €</option>
-      <option value="500 – 1 000 €">500 – 1 000 €</option>
       <option value="1 000 – 2 500 €">1 000 – 2 500 €</option>
-      <option value="> 2 500 €">Plus de 2 500 €</option>
+      <option value="2 500 – 5 000 €">2 500 – 5 000 €</option>
+      <option value="> 5 000 €">Plus de 5 000 €</option>
     </select>
   </label>
 
@@ -145,6 +160,50 @@ import Email from './Email.astro';
   .contact-form input[aria-invalid='true'],
   .contact-form textarea[aria-invalid='true'] {
     border-color: var(--rose);
+  }
+  /* Recherche d'adresse (Base Adresse Nationale) */
+  .ac {
+    position: relative;
+  }
+  .ac-list {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 30;
+    margin: 0;
+    padding: 4px;
+    list-style: none;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow);
+    max-height: 264px;
+    overflow-y: auto;
+  }
+  .ac-list[hidden] {
+    display: none;
+  }
+  .ac-option {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 9px 11px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .ac-option:hover,
+  .ac-option[aria-selected='true'] {
+    background: var(--accent-tint);
+  }
+  .ac-option strong {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--ink);
+  }
+  .ac-option small {
+    font-size: 0.78rem;
+    color: var(--muted);
   }
   .hp {
     position: absolute;
@@ -326,4 +385,134 @@ import Email from './Email.astro';
       }
     });
   }
+</script>
+
+<script>
+  // Recherche d'adresse via la Base Adresse Nationale (api-adresse.data.gouv.fr) :
+  // service public gratuit, sans clé ni quota, CORS ouvert. Couvre adresses,
+  // lieux-dits (domaines/salles) et communes (ville + code postal).
+  (() => {
+    const root = document.querySelector<HTMLElement>('[data-ac]');
+    const input = root?.querySelector<HTMLInputElement>('input');
+    const list = root?.querySelector<HTMLUListElement>('.ac-list');
+    if (!root || !input || !list) return;
+
+    type Item = { value: string; main: string; sub: string };
+    let items: Item[] = [];
+    let active = -1;
+    let timer: number | undefined;
+    let controller: AbortController | null = null;
+
+    const esc = (s: string) =>
+      s.replace(/[&<>"']/g, (c) =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string)
+      );
+
+    const close = () => {
+      list.hidden = true;
+      list.innerHTML = '';
+      items = [];
+      active = -1;
+      input.setAttribute('aria-expanded', 'false');
+      input.removeAttribute('aria-activedescendant');
+    };
+
+    const pick = (i: number) => {
+      const it = items[i];
+      if (!it) return;
+      input.value = it.value;
+      close();
+      input.focus();
+    };
+
+    const paint = () => {
+      Array.from(list.children).forEach((li, i) => {
+        li.setAttribute('aria-selected', String(i === active));
+        if (i === active) {
+          input.setAttribute('aria-activedescendant', `ac-opt-${i}`);
+          (li as HTMLElement).scrollIntoView({ block: 'nearest' });
+        }
+      });
+    };
+
+    const render = () => {
+      if (!items.length) return close();
+      list.innerHTML = items
+        .map(
+          (it, i) =>
+            `<li class="ac-option" role="option" id="ac-opt-${i}" aria-selected="false">` +
+            `<strong>${esc(it.main)}</strong>` +
+            (it.sub ? `<small>${esc(it.sub)}</small>` : '') +
+            `</li>`
+        )
+        .join('');
+      list.hidden = false;
+      input.setAttribute('aria-expanded', 'true');
+      Array.from(list.children).forEach((li, i) => {
+        // mousedown (pas click) : sélectionne avant que le blur ne ferme la liste
+        li.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          pick(i);
+        });
+      });
+    };
+
+    const search = async (q: string) => {
+      controller?.abort();
+      controller = new AbortController();
+      try {
+        const res = await fetch(
+          `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=6&autocomplete=1`,
+          { signal: controller.signal }
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        items = ((data.features as any[]) || []).map((f) => {
+          const p = f.properties || {};
+          const isCity = p.type === 'municipality';
+          const cityName = p.city ?? p.name ?? p.label;
+          return {
+            value: isCity && p.postcode ? `${cityName} (${p.postcode})` : p.label,
+            main: isCity ? cityName : p.label,
+            sub: isCity
+              ? [p.postcode, p.context].filter(Boolean).join(' · ')
+              : p.context ?? '',
+          } as Item;
+        });
+        active = -1;
+        render();
+      } catch (_) {
+        /* réseau indisponible ou requête annulée : on ignore, l'utilisateur peut saisir librement */
+      }
+    };
+
+    input.addEventListener('input', () => {
+      const q = input.value.trim();
+      if (timer) window.clearTimeout(timer);
+      if (q.length < 3) return close();
+      timer = window.setTimeout(() => search(q), 250);
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (list.hidden) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        active = Math.min(active + 1, items.length - 1);
+        paint();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        active = Math.max(active - 1, 0);
+        paint();
+      } else if (e.key === 'Enter' && active >= 0) {
+        e.preventDefault();
+        pick(active);
+      } else if (e.key === 'Escape') {
+        close();
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!root.contains(e.target as Node)) close();
+    });
+  })();
 </script>
