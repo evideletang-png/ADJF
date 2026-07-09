@@ -62,6 +62,7 @@ const aggregateLd = connected
             ))}
           </span>
           <p class="review-text">{r.text}</p>
+          <button class="review-more" type="button">Lire la suite</button>
           <footer class="review-foot">
             <cite>{r.author}</cite>
             <span>{r.date ? `${r.date} · ` : ''}via Google</span>
@@ -120,8 +121,7 @@ const aggregateLd = connected
   .review-card {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    height: 100%;
+    gap: 12px;
     margin: 0;
     padding: 24px;
     background: var(--surface);
@@ -138,7 +138,36 @@ const aggregateLd = connected
     line-height: 1.5;
     color: var(--ink);
     margin: 0;
-    flex: 1;
+    /* Tronqué à 7 lignes -> toutes les cartes ont la même hauteur */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 7;
+    overflow: hidden;
+    min-height: calc(1.5em * 7);
+  }
+  .review-card.expanded .review-text {
+    -webkit-line-clamp: unset;
+    overflow: visible;
+    min-height: 0;
+  }
+  .review-more {
+    align-self: flex-start;
+    visibility: hidden;
+    background: none;
+    border: 0;
+    padding: 2px 0;
+    color: var(--accent);
+    font-family: var(--sans);
+    font-weight: 650;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .review-more.is-visible {
+    visibility: visible;
+  }
+  .review-more:hover {
+    color: var(--accent-strong);
+    text-decoration: underline;
   }
   .review-foot {
     display: flex;
@@ -159,3 +188,18 @@ const aggregateLd = connected
     font-style: italic;
   }
 </style>
+
+<script>
+  document.querySelectorAll('.review-card').forEach((card) => {
+    const text = card.querySelector('.review-text');
+    const btn = card.querySelector('.review-more');
+    if (!text || !btn) return;
+    // Le texte dépasse-t-il la troncature (7 lignes) ?
+    if (text.scrollHeight - text.clientHeight < 4) return; // avis court : pas de bouton
+    btn.classList.add('is-visible');
+    btn.addEventListener('click', () => {
+      const expanded = card.classList.toggle('expanded');
+      btn.textContent = expanded ? 'Voir moins' : 'Lire la suite';
+    });
+  });
+</script>
