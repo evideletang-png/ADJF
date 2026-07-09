@@ -130,11 +130,32 @@ collections:
         label: Page d'accueil
         file: /src/data/home.json
         fields:
-          - label: Diaporama d'accueil
+          - label: Carrousel d'accueil (photos)
             name: heroSlides
             widget: list
-            label_singular: Diapo
-            summary: '{{fields.eyebrow}}'
+            label_singular: Photo
+            summary: '{{fields.alt}}'
+            hint: 'Vos plus belles réalisations, en plein écran. La 1ʳᵉ photo s''affiche en premier. Tant qu''une case est vide, un dégradé doux s''affiche à la place.'
+            fields:
+              - label: Photo
+                name: image
+                widget: image
+                required: false
+                hint: 'Format paysage conseillé, au moins 1600 px de large.'
+              - label: Description de la photo (accessibilité + SEO)
+                name: alt
+                widget: string
+                required: false
+                hint: 'Décrivez la photo en une phrase, ex. « Bouquet de mariée aux teintes pastel ».'
+              - label: Ambiance (si pas encore de photo)
+                name: variant
+                widget: select
+                default: ''
+                required: false
+                options: *variant_options
+          - label: Accroche (sous le carrousel)
+            name: heroBand
+            widget: object
             fields:
               - { label: Sur-titre, name: eyebrow, widget: string }
               - label: Titre
@@ -142,12 +163,6 @@ collections:
                 widget: string
                 hint: 'Entourez un mot d''étoiles pour l''afficher en italique, ex. « Design floral *sur mesure* ».'
               - { label: Texte, name: copy, widget: text }
-              - label: Ambiance
-                name: variant
-                widget: select
-                default: ''
-                required: false
-                options: *variant_options
           - label: Trois points clés
             name: intro
             widget: list

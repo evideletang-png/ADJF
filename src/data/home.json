@@ -1,24 +1,26 @@
 {
   "heroSlides": [
     {
-      "variant": "iris",
-      "eyebrow": "Fleuriste événementielle",
-      "title": "Design floral *sur mesure*, sensible & de saison",
-      "copy": "Des compositions pensées autour du lieu, de la lumière et des fleurs du moment."
+      "image": "",
+      "alt": "Composition florale de mariage sur une table dressée",
+      "variant": "iris"
     },
     {
-      "variant": "",
-      "eyebrow": "Mariages",
-      "title": "Des mariages fleuris *comme des jardins*",
-      "copy": "Bouquet, cérémonie, tables et scénographie : un fil floral cohérent, du oui au dernier verre."
+      "image": "",
+      "alt": "Bouquet de mariée aux teintes de saison",
+      "variant": ""
     },
     {
-      "variant": "sky",
-      "eyebrow": "Événements & entreprises",
-      "title": "Fleurir les lieux qui *reçoivent*",
-      "copy": "Réceptions, boutiques, bureaux : abonnements et créations ponctuelles au rythme des saisons."
+      "image": "",
+      "alt": "Scénographie florale pour une réception d'entreprise",
+      "variant": "sky"
     }
   ],
+  "heroBand": {
+    "eyebrow": "Fleuriste événementielle",
+    "title": "Design floral *sur mesure*, sensible & de saison",
+    "copy": "Des compositions pensées autour du lieu, de la lumière et des fleurs du moment — du mariage à l'abonnement."
+  },
   "intro": [
     {
       "title": "Sur mesure",

@@ -1,0 +1,129 @@
+---
+// Écran d'accueil : la marguerite du logo se dessine, puis le site apparaît.
+// Affiché une seule fois par session (sessionStorage), toujours passable d'un
+// clic, désactivé si l'utilisateur préfère réduire les animations. Le contenu
+// du site reste dans la page (l'écran n'est qu'un calque au-dessus) : aucune
+// pénalité pour le référencement.
+import Sprig from './Sprig.astro';
+import { SITE } from '../consts';
+---
+
+<div id="intro-splash" class="intro-splash" role="dialog" aria-label={`Bienvenue chez ${SITE.name}`}>
+  <div class="intro-splash-inner">
+    <div class="intro-splash-flower"><Sprig size={128} animate /></div>
+    <p class="intro-splash-name">{SITE.name}</p>
+  </div>
+</div>
+
+{/* Si le JavaScript est coupé, l'écran ne doit jamais rester bloqué. */}
+<noscript><style>#intro-splash { display: none !important; }</style></noscript>
+
+<style>
+  .intro-splash {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    background: radial-gradient(circle at 50% 42%, #eef6fb 0%, #dcebf4 52%, #cbe1ef 100%);
+    animation: intro-in 0.45s ease both;
+  }
+  .intro-splash.is-hiding {
+    animation: intro-out 0.6s ease forwards;
+  }
+  .intro-splash-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 24px;
+    text-align: center;
+  }
+  .intro-splash-flower {
+    color: var(--accent);
+  }
+  .intro-splash-name {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: clamp(1.3rem, 1rem + 1.7vw, 2rem);
+    color: var(--accent-strong);
+    letter-spacing: 0.01em;
+    opacity: 0;
+    animation: intro-rise 0.8s ease forwards;
+    animation-delay: 1s;
+  }
+  @keyframes intro-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes intro-out {
+    to {
+      opacity: 0;
+      visibility: hidden;
+    }
+  }
+  @keyframes intro-rise {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>
+
+{/* Verrou de défilement pendant l'écran d'accueil (classe posée sur <html>). */}
+<style is:global>
+  html.intro-lock,
+  html.intro-lock body {
+    overflow: hidden;
+  }
+</style>
+
+<script is:inline>
+  // S'exécute pendant l'analyse de la page, AVANT le premier rendu : si l'écran
+  // a déjà été vu dans cette session (ou si l'utilisateur préfère moins
+  // d'animations), on le retire tout de suite — pas de clignotement au retour.
+  (function () {
+    var el = document.getElementById('intro-splash');
+    if (!el) return;
+    var seen = false;
+    try {
+      seen = sessionStorage.getItem('adjf-intro-seen') === '1';
+    } catch (e) {}
+    var reduce =
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (seen || reduce) {
+      el.remove();
+    } else {
+      document.documentElement.classList.add('intro-lock');
+    }
+  })();
+</script>
+
+<script>
+  // Fermeture (auto après l'éclosion, ou au clic). L'écran ne réapparaît plus
+  // de la session.
+  const el = document.getElementById('intro-splash');
+  if (el) {
+    const dismiss = () => {
+      if (el.classList.contains('is-hiding')) return;
+      el.classList.add('is-hiding');
+      document.documentElement.classList.remove('intro-lock');
+      try {
+        sessionStorage.setItem('adjf-intro-seen', '1');
+      } catch (e) {}
+      window.setTimeout(() => el.remove(), 640);
+    };
+    el.addEventListener('click', dismiss);
+    window.setTimeout(dismiss, 2100);
+  }
+</script>

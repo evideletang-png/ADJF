@@ -1,28 +1,33 @@
 ---
-import Sprig from './Sprig.astro';
-
-// Diapositives du hero. Les visuels sont pour l'instant des dégradés
-// (marque-place) : il suffira d'ajouter de vraies photos en Phase 4.
+// Hero « plein cadre » : un carrousel de photos de réalisations (géré par
+// l'admin via le CMS). L'accroche et les boutons vivent dans un bandeau juste
+// en dessous — le carrousel reste 100 % visuel. Tant qu'aucune photo n'est
+// téléversée, on retombe sur un dégradé doux (marque-place).
 interface Slide {
+  image?: string;
+  alt?: string;
   variant?: string;
+}
+interface Band {
   eyebrow: string;
   title: string;
   copy: string;
 }
 interface Props {
   slides?: Slide[];
+  band?: Band;
 }
 
 const defaultSlides: Slide[] = [
-  {
-    variant: 'iris',
-    eyebrow: 'Fleuriste événementielle',
-    title: 'Design floral *sur mesure*, sensible & de saison',
-    copy: 'Des compositions pensées autour du lieu, de la lumière et des fleurs du moment.',
-  },
+  { image: '', alt: 'Composition florale de saison', variant: 'iris' },
 ];
+const defaultBand: Band = {
+  eyebrow: 'Fleuriste événementielle',
+  title: 'Design floral *sur mesure*, sensible & de saison',
+  copy: 'Des compositions pensées autour du lieu, de la lumière et des fleurs du moment.',
+};
 
-const { slides = defaultSlides } = Astro.props;
+const { slides = defaultSlides, band = defaultBand } = Astro.props;
 
 // Convertit *mot* en <em>mot</em> (accent italique), en échappant le HTML.
 function emphasize(str: string): string {
@@ -34,33 +39,36 @@ function emphasize(str: string): string {
 }
 ---
 
-<section class="hero" aria-roledescription="diaporama" aria-label="Présentation de l'atelier">
+<section class="hero" aria-roledescription="diaporama" aria-label="Réalisations en images">
   <div class="hero-slides">
     {
       slides.map((s, i) => (
-        <article
+        <figure
           class="hero-slide"
           data-slide={i}
           aria-hidden={i === 0 ? 'false' : 'true'}
         >
-          <div class="hero-bg placeholder" data-variant={s.variant} />
-          <div class="container hero-inner">
-            <div class="hero-text">
-              <p class="eyebrow hero-eyebrow">{s.eyebrow}</p>
-              <h1 set:html={emphasize(s.title)} />
-              <p class="hero-copy">{s.copy}</p>
-              <div class="hero-actions">
-                <a class="btn btn-primary" href="/contact">Demander un devis</a>
-                <a class="btn btn-ghost" href="/prestations">Voir les prestations</a>
-              </div>
+          {s.image ? (
+            <img
+              class="hero-photo"
+              src={s.image}
+              alt={s.alt || ''}
+              loading={i === 0 ? 'eager' : 'lazy'}
+              fetchpriority={i === 0 ? 'high' : 'auto'}
+              decoding="async"
+            />
+          ) : (
+            <div class="hero-photo placeholder" data-variant={s.variant}>
+              <span class="placeholder-label">
+                {s.alt ? `Photo — ${s.alt}` : 'Photo de réalisation'}
+              </span>
             </div>
-          </div>
-        </article>
+          )}
+        </figure>
       ))
     }
+    <div class="hero-scrim" aria-hidden="true"></div>
   </div>
-
-  <div class="hero-sprig" aria-hidden="true"><Sprig size={148} animate /></div>
 
   <div class="hero-dots" role="tablist" aria-label="Choisir une diapositive">
     {
@@ -78,6 +86,18 @@ function emphasize(str: string): string {
   </div>
 </section>
 
+<section class="hero-band">
+  <div class="container hero-band-inner">
+    <p class="eyebrow hero-band-eyebrow">{band.eyebrow}</p>
+    <h1 class="hero-band-title" set:html={emphasize(band.title)} />
+    <p class="hero-band-copy">{band.copy}</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="/contact">Demander un devis</a>
+      <a class="btn btn-ghost" href="/prestations">Voir les prestations</a>
+    </div>
+  </div>
+</section>
+
 <style>
   .hero {
     position: relative;
@@ -85,13 +105,14 @@ function emphasize(str: string): string {
   }
   .hero-slides {
     position: relative;
-    min-height: min(78vh, 720px);
+    min-height: min(76vh, 680px);
+    background: var(--surface-2);
+    overflow: hidden;
   }
   .hero-slide {
     position: absolute;
     inset: 0;
-    display: grid;
-    align-items: center;
+    margin: 0;
     opacity: 0;
     transition: opacity 0.9s ease;
     pointer-events: none;
@@ -100,71 +121,29 @@ function emphasize(str: string): string {
     opacity: 1;
     pointer-events: auto;
   }
-  .hero-bg {
-    position: absolute;
-    inset: 0;
-    border-radius: 0;
-    z-index: -1;
+  .hero-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
-  .hero-bg::after {
-    background: linear-gradient(
-      100deg,
-      rgba(251, 252, 253, 0.96) 0%,
-      rgba(251, 252, 253, 0.76) 42%,
-      rgba(251, 252, 253, 0.14) 100%
-    );
-  }
-  .hero-inner {
-    padding-block: clamp(40px, 8vw, 80px);
-  }
-  .hero-text {
-    max-width: 640px;
-    color: var(--ink);
-  }
-  .hero-eyebrow {
-    color: var(--accent);
-  }
-  .hero-text h1 {
-    font-size: var(--fs-display);
-    color: var(--ink);
-    margin-bottom: 18px;
-  }
-  .hero-text h1 :global(em) {
-    font-style: italic;
-    color: var(--accent);
-  }
-  .hero-copy {
-    font-size: var(--fs-lead);
-    color: var(--muted);
-    max-width: 48ch;
-    margin-bottom: 28px;
-  }
-  .hero-actions {
+  .hero-photo.placeholder {
     display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
+    border-radius: 0;
   }
-  .hero-actions .btn-ghost {
-    color: var(--ink);
-    border-color: var(--line);
-    background: var(--surface);
-  }
-  .hero-actions .btn-ghost:hover {
-    border-color: var(--accent);
-    color: var(--accent-strong);
+  /* Léger dégradé en bas — garde les puces lisibles sur n'importe quelle photo. */
+  .hero-scrim {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 120px;
+    background: linear-gradient(to top, rgba(24, 34, 48, 0.28), transparent);
+    pointer-events: none;
+    z-index: 1;
   }
 
-  .hero-sprig {
-    position: absolute;
-    right: clamp(16px, 4vw, 54px);
-    bottom: 72px;
-    color: #7fb3d1;
-    z-index: 2;
-  }
   .hero-dots {
     position: absolute;
     left: 50%;
-    bottom: 26px;
+    bottom: 22px;
     transform: translateX(-50%);
     display: flex;
     gap: 10px;
@@ -175,19 +154,52 @@ function emphasize(str: string): string {
     height: 4px;
     border: 0;
     border-radius: 2px;
-    background: rgba(59, 70, 88, 0.22);
+    background: rgba(255, 255, 255, 0.55);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
     transition: background 0.25s ease;
   }
   .hero-dot[aria-selected='true'] {
-    background: var(--accent);
+    background: #fff;
+  }
+
+  /* Bandeau d'accroche — l'accroche + les boutons, sous le carrousel. */
+  .hero-band {
+    padding-block: clamp(38px, 6vw, 68px);
+    text-align: center;
+  }
+  .hero-band-inner {
+    max-width: 760px;
+  }
+  .hero-band-eyebrow {
+    color: var(--accent);
+    justify-content: center;
+  }
+  .hero-band-title {
+    font-size: var(--fs-display);
+    color: var(--ink);
+    margin: 10px auto 16px;
+  }
+  .hero-band-title :global(em) {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .hero-band-copy {
+    font-size: var(--fs-lead);
+    color: var(--muted);
+    max-width: 52ch;
+    margin: 0 auto 26px;
+  }
+  .hero-actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
   }
 
   @media (max-width: 620px) {
     .hero-slides {
-      min-height: 78vh;
-    }
-    .hero-sprig {
-      display: none;
+      min-height: 62vh;
     }
   }
 </style>

@@ -3,6 +3,7 @@ import '../styles/global.css';
 import Seo from '../components/Seo.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
+import IntroSplash from '../components/IntroSplash.astro';
 import { SITE } from '../consts';
 
 interface Props {
@@ -40,6 +41,7 @@ const props = Astro.props;
     <slot name="head" />
   </head>
   <body>
+    <IntroSplash />
     <a class="skip-link" href="#main">Aller au contenu</a>
     <SiteHeader />
     <main id="main">
