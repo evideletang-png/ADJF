@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /admin/
 
 # Sitemap généré par @astrojs/sitemap au build
 Sitemap: https://www.atelierjf.fr/sitemap-index.xml

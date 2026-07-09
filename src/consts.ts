@@ -1,28 +1,14 @@
-// Configuration centrale du site — un seul endroit à modifier.
-// (En Phase 2, ces valeurs seront éditables par Léana via le CMS.)
+// Configuration centrale du site.
+// Les réglages « contenu » (nom, coordonnées, SEO…) vivent dans
+// src/data/site.json — éditables par Léana via le CMS (/admin).
+import site from './data/site.json';
 
 export const SITE = {
-  name: "L'atelier des jours fleuris",
-  shortName: 'Les jours fleuris',
-  // Domaine de production — à ajuster (doit rester cohérent avec astro.config.mjs).
-  url: 'https://www.atelierjf.fr',
-  tagline: 'Design floral sur mesure, sensible & de saison',
-  description:
-    "L'atelier des jours fleuris compose des fleurs sensibles et de saison pour les mariages, les événements privés, les événements professionnels et les abonnements floraux.",
+  ...site,
+  // Réglages techniques (non éditables au CMS)
   lang: 'fr',
   locale: 'fr_FR',
-  author: 'Léana',
-
-  // Coordonnées publiques — à compléter.
-  email: 'contact@atelierjf.fr',
-  phone: '',
-  areaServed: 'France',
-  city: '',
-
-  // Réseaux & fiche Google (avis clients branchés en Phase 3).
-  instagram: 'https://www.instagram.com/',
-  googleBusinessUrl: '',
-} as const;
+};
 
 // Navigation principale.
 export const NAV = [

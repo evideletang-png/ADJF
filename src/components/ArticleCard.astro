@@ -7,6 +7,8 @@ interface Props {
   date?: Date;
   readingTime?: string;
   variant?: string;
+  image?: string;
+  imageAlt?: string;
 }
 const {
   title,
@@ -16,6 +18,8 @@ const {
   date,
   readingTime,
   variant = '',
+  image,
+  imageAlt,
 } = Astro.props;
 
 const dateStr = date
@@ -28,8 +32,16 @@ const dateStr = date
 ---
 
 <a class="article-card reveal" href={href}>
-  <div class="article-media placeholder" data-variant={variant}>
-    <span class="placeholder-label">Photo — article</span>
+  <div class="article-media">
+    {
+      image ? (
+        <img src={image} alt={imageAlt || title} loading="lazy" width="640" height="400" />
+      ) : (
+        <div class="placeholder" data-variant={variant}>
+          <span class="placeholder-label">Photo — article</span>
+        </div>
+      )
+    }
   </div>
   <div class="article-body">
     <div class="article-meta">
@@ -60,6 +72,15 @@ const dateStr = date
   }
   .article-media {
     aspect-ratio: 16 / 10;
+    overflow: hidden;
+  }
+  .article-media img,
+  .article-media .placeholder {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .article-media .placeholder {
     display: flex;
   }
   .article-body {

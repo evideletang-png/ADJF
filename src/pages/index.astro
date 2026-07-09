@@ -83,6 +83,8 @@ const intro = [
               href={`/prestations/${p.id}`}
               tags={p.data.tags.slice(0, 3)}
               variant={p.data.variant}
+              image={p.data.image}
+              imageAlt={p.data.imageAlt}
             />
           ))
         }
@@ -151,6 +153,8 @@ const intro = [
               date={post.data.pubDate}
               readingTime={post.data.readingTime}
               variant={post.data.variant}
+              image={post.data.image}
+              imageAlt={post.data.imageAlt}
             />
           ))
         }

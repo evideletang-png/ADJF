@@ -50,8 +50,14 @@ const breadcrumb = {
       {
         featured && (
           <a class="featured reveal" href={`/journal/${featured.id}`}>
-            <div class="featured-media placeholder" data-variant={featured.data.variant}>
-              <span class="placeholder-label">Photo — article</span>
+            <div class="featured-media">
+              {featured.data.image ? (
+                <img src={featured.data.image} alt={featured.data.imageAlt || featured.data.title} width="720" height="540" />
+              ) : (
+                <div class="placeholder" data-variant={featured.data.variant}>
+                  <span class="placeholder-label">Photo — article</span>
+                </div>
+              )}
             </div>
             <div class="featured-body">
               <div class="article-meta">
@@ -79,6 +85,8 @@ const breadcrumb = {
                 date={post.data.pubDate}
                 readingTime={post.data.readingTime}
                 variant={post.data.variant}
+                image={post.data.image}
+                imageAlt={post.data.imageAlt}
               />
             ))}
           </div>
@@ -110,6 +118,12 @@ const breadcrumb = {
     display: flex;
     border-radius: var(--radius-sm);
     overflow: hidden;
+  }
+  .featured-media img,
+  .featured-media .placeholder {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
   .article-meta {
     display: flex;

@@ -1,0 +1,122 @@
+# Configuration de l'espace d'administration (Sveltia CMS)
+# Doc : https://sveltiacms.app/en/docs
+# yaml-language-server: $schema=https://unpkg.com/@sveltia/cms/schema/sveltia-cms.json
+
+backend:
+  name: github
+  repo: evideletang-png/ADJF
+  branch: main
+
+# Adresse publique du site (liens « Voir le site »)
+site_url: https://www.atelierjf.fr
+display_url: https://www.atelierjf.fr
+logo_url: https://www.atelierjf.fr/logo.jpg
+
+# Où sont stockées les images téléversées
+media_folder: /public/media
+public_folder: /media
+
+# Ambiances de couleur réutilisées (quand il n'y a pas de photo)
+_variant_options: &variant_options
+  - { label: 'Défaut (dégradé doux)', value: '' }
+  - { label: 'Bleu', value: 'sky' }
+  - { label: 'Lavande', value: 'iris' }
+  - { label: 'Rosé', value: 'rose' }
+  - { label: 'Doré', value: 'ochre' }
+
+# Bloc FAQ réutilisable (questions / réponses)
+_faq_field: &faq_field
+  label: 'FAQ (questions fréquentes)'
+  name: faq
+  widget: list
+  required: false
+  label_singular: Question
+  summary: '{{fields.q}}'
+  fields:
+    - { label: Question, name: q, widget: string }
+    - { label: Réponse, name: a, widget: text }
+
+collections:
+  # ------------------------------------------------------------------ #
+  - name: reglages
+    label: Réglages du site
+    description: Nom, coordonnées, description SEO, réseaux.
+    files:
+      - name: general
+        label: Général & coordonnées
+        file: /src/data/site.json
+        fields:
+          - { label: Nom du site, name: name, widget: string }
+          - { label: Nom court, name: shortName, widget: string }
+          - { label: Adresse du site (URL), name: url, widget: string, hint: 'Ex. https://www.atelierjf.fr' }
+          - { label: Accroche, name: tagline, widget: string }
+          - { label: Description (SEO), name: description, widget: text }
+          - { label: Autrice / responsable, name: author, widget: string }
+          - { label: Email public, name: email, widget: string }
+          - { label: Téléphone public, name: phone, widget: string, required: false }
+          - { label: Zone desservie, name: areaServed, widget: string }
+          - { label: Ville, name: city, widget: string, required: false }
+          - { label: Lien Instagram, name: instagram, widget: string, required: false }
+          - { label: Lien fiche Google (avis), name: googleBusinessUrl, widget: string, required: false }
+
+  # ------------------------------------------------------------------ #
+  - name: articles
+    label: Journal (articles)
+    label_singular: Article
+    description: Les articles du blog.
+    folder: /src/content/blog
+    create: true
+    extension: md
+    format: frontmatter
+    slug: '{{slug}}'
+    summary: '{{title}}'
+    sortable_fields: [pubDate, title]
+    fields:
+      - { label: Titre, name: title, widget: string }
+      - { label: Résumé (SEO), name: description, widget: text }
+      - { label: Date de publication, name: pubDate, widget: datetime, format: 'yyyy-MM-dd', time_format: false }
+      - { label: Date de mise à jour, name: updatedDate, widget: datetime, format: 'yyyy-MM-dd', time_format: false, required: false }
+      - { label: Catégorie, name: category, widget: string, default: 'Conseil' }
+      - { label: Temps de lecture, name: readingTime, widget: string, required: false, hint: 'Ex. « 4 min »' }
+      - { label: Photo de couverture, name: image, widget: image, required: false }
+      - { label: Description de la photo (accessibilité), name: imageAlt, widget: string, required: false }
+      - label: Ambiance (si pas de photo)
+        name: variant
+        widget: select
+        default: ''
+        required: false
+        options: *variant_options
+      - { label: Mot-clé principal (SEO), name: keyword, widget: string, required: false }
+      - *faq_field
+      - { label: Brouillon (non publié), name: draft, widget: boolean, default: false }
+      - { label: Contenu de l'article, name: body, widget: markdown }
+
+  # ------------------------------------------------------------------ #
+  - name: prestations
+    label: Prestations
+    label_singular: Prestation
+    description: Les offres (mariages, événements, abonnements, ateliers…).
+    folder: /src/content/prestations
+    create: true
+    extension: md
+    format: frontmatter
+    slug: '{{slug}}'
+    summary: '{{title}}'
+    sortable_fields: [order, title]
+    fields:
+      - { label: Titre, name: title, widget: string }
+      - { label: Description (SEO), name: description, widget: text }
+      - { label: Ordre d'affichage, name: order, widget: number, default: 0, value_type: int }
+      - { label: Étiquettes, name: tags, widget: list, required: false }
+      - { label: 'Prix « à partir de »', name: priceFrom, widget: string, required: false, hint: 'Ex. « Sur devis » ou « Dès 60 € »' }
+      - { label: Photo de couverture, name: image, widget: image, required: false }
+      - { label: Description de la photo (accessibilité), name: imageAlt, widget: string, required: false }
+      - label: Ambiance (si pas de photo)
+        name: variant
+        widget: select
+        default: ''
+        required: false
+        options: *variant_options
+      - *faq_field
+      - { label: Brouillon (non publié), name: draft, widget: boolean, default: false }
+      - { label: Contenu détaillé, name: body, widget: markdown }
