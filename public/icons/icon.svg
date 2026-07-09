@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="L'atelier des jours fleuris">
+  <rect width="64" height="64" rx="13" fill="#b9dce8" />
+  <g transform="translate(14 -3) scale(0.45)" fill="none" stroke="#f4f2bf" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M40 140 C 41 112 39 88 40 64" vector-effect="non-scaling-stroke" />
+    <path d="M40 106 C 27 102 19 92 18 80 C 32 82 39 92 40 106" vector-effect="non-scaling-stroke" />
+    <path d="M40 120 C 53 116 61 106 62 94 C 48 96 41 106 40 120" vector-effect="non-scaling-stroke" />
+    <ellipse cx="40" cy="29" rx="7" ry="13" vector-effect="non-scaling-stroke" />
+    <ellipse cx="40" cy="29" rx="7" ry="13" transform="rotate(60 40 44)" vector-effect="non-scaling-stroke" />
+    <ellipse cx="40" cy="29" rx="7" ry="13" transform="rotate(120 40 44)" vector-effect="non-scaling-stroke" />
+    <ellipse cx="40" cy="29" rx="7" ry="13" transform="rotate(180 40 44)" vector-effect="non-scaling-stroke" />
+    <ellipse cx="40" cy="29" rx="7" ry="13" transform="rotate(240 40 44)" vector-effect="non-scaling-stroke" />
+    <ellipse cx="40" cy="29" rx="7" ry="13" transform="rotate(300 40 44)" vector-effect="non-scaling-stroke" />
+    <circle cx="40" cy="44" r="5" vector-effect="non-scaling-stroke" />
+  </g>
+</svg>
