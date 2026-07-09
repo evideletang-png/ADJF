@@ -20,13 +20,18 @@ ErrorDocument 404 /404.html
   ExpiresByType image/svg+xml "access plus 1 month"
 </IfModule>
 
-# --- À ACTIVER une fois le certificat SSL OVH en place (décommenter) ---
-# Forcer HTTPS
-# RewriteEngine On
-# RewriteCond %{HTTPS} off
-# RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+# SSL actif : on force HTTPS. Méthode compatible OVH (double condition
+# X-Forwarded-Proto + HTTPS) pour éviter toute boucle de redirection.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+</IfModule>
 
-# Forcer la version www (optionnel)
-# RewriteEngine On
-# RewriteCond %{HTTP_HOST} ^atelierjf\.fr$ [NC]
-# RewriteRule ^(.*)$ https://www.atelierjf.fr/$1 [R=301,L]
+# Forcer la version www (optionnel) — décommenter si souhaité :
+# <IfModule mod_rewrite.c>
+#   RewriteEngine On
+#   RewriteCond %{HTTP_HOST} ^atelierjf\.fr$ [NC]
+#   RewriteRule ^ https://www.atelierjf.fr%{REQUEST_URI} [R=301,L]
+# </IfModule>
