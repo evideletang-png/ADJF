@@ -1,38 +1,36 @@
 {
-  "source": "example",
-  "average": 4.8,
-  "count": 5,
-  "updatedAt": "",
+  "source": "google",
+  "average": 5,
+  "count": 6,
+  "updatedAt": "2026-07-09T09:16:03.814Z",
   "reviews": [
     {
-      "author": "Camille & Clément",
+      "author": "Alhena",
       "rating": 5,
-      "text": "Léana a capté exactement l'ambiance que nous imaginions pour notre mariage. Des fleurs d'une fraîcheur incroyable et un sens du détail rare.",
-      "date": "Mai 2026"
+      "text": "J’ai eu la chance de travailler plusieurs fois avec Léana, qui se cache derrière L’Atelier des Jours Fleuris, et je peux dire sans hésiter qu’elle a un talent incroyable.\n\nNous avons notamment collaboré sur un mariage complet ainsi que sur un shooting d’inspiration pour lequel j’avais des attentes très précises. Léana a immédiatement compris l’univers que je souhaitais créer et a réussi à le retranscrire avec une justesse impressionnante. Quand j’ai découvert ses créations, je me suis dit : “C’est exactement ça.” Et c’est assez rare pour être souligné !\n\nLors du mariage sur lequel nous avons travaillé ensemble, tout était pensé dans les moindres détails. Les compositions florales étaient parfaitement adaptées au lieu, à l’ambiance et à l’histoire des mariés. Rien n’était laissé au hasard : les centres de table, la cérémonie laïque, la magnifique composition florale qui entourait le gâteau, le bouquet de la mariée, les bouquets des demoiselles d’honneur, les boutonnières… Tout formait un ensemble cohérent, élégant et profondément personnalisé.\n\nJ’ai particulièrement adoré l’attention portée aux bouquets des demoiselles d’honneur, qui s’accordaient parfaitement aux couleurs de leurs robes tout en gardant une vraie harmonie d’ensemble. On sent que chaque fleur est choisie avec soin et que chaque création a été pensée pour raconter quelque chose.\n\nEn tant que photographe de mariage, c’est un vrai bonheur de travailler avec des décors aussi beaux et aussi réfléchis. Chaque détail est mis en valeur, chaque composition apporte quelque chose aux images, et le résultat est toujours magnifique.\n\nAu-delà de son immense talent, Léana est une personne passionnée, à l’écoute et investie dans chacun de ses projets. C’est le genre de prestataire que l’on est heureuse de retrouver sur un événement et que l’on recommande naturellement à ses mariés.\n\nJ’ai déjà eu plusieurs fois l’occasion d’admirer son travail, et à chaque fois, je suis conquise.",
+      "date": "il y a 4 semaines",
+      "url": "https://www.google.com/maps/contrib/106314920215798403894/reviews"
     },
     {
-      "author": "Maison Pisco",
+      "author": "Husson Anne-Charlotte",
       "rating": 5,
-      "text": "Nos compositions hebdomadaires subliment la boutique. Toujours de saison, toujours justes.",
-      "date": "Avril 2026"
+      "text": "J’ai reçu un superbe bouquet composé et livré par l’Atelier des jours fleuris. Bouquet au top et Leana est très professionnelle et pleine de créativité.\nHâte de voir les suivants !🌸",
+      "date": "il y a 9 mois",
+      "url": "https://www.google.com/maps/contrib/107329630244733691888/reviews"
     },
     {
-      "author": "Sophie D.",
+      "author": "Lisa Z",
       "rating": 5,
-      "text": "Un atelier passionnant et une vraie générosité dans la transmission. On repart des étoiles plein les yeux.",
-      "date": "Mars 2026"
+      "text": "Je recommande les yeux fermés ! Léana est très investie et a à cœur de rendre votre événement inoubliable, sans parler de son indéniable talent ! Ses compositions sont d’une grande qualité et ont fait forte impression ! Encore un grand merci !",
+      "date": "il y a 9 mois",
+      "url": "https://www.google.com/maps/contrib/112054453109407679985/reviews"
     },
     {
-      "author": "Domaine des Tilleuls",
+      "author": "Chloe Paulus",
       "rating": 5,
-      "text": "Scénographie florale à couper le souffle pour notre séminaire. Ponctuelle, à l'écoute, vraiment professionnelle.",
-      "date": "Février 2026"
-    },
-    {
-      "author": "Anaïs & Théo",
-      "rating": 4,
-      "text": "Superbe travail pour notre cérémonie. Quelques ajustements de dernière minute gérés avec beaucoup de calme.",
-      "date": "Janvier 2026"
+      "text": "J’ai fait appel à l’atelier des jours fleuris pour la naissance de ma nièce.\nLeana est très réactive et créative.\nJe vous conseil vivement de faire appel à ses talents",
+      "date": "il y a 9 mois",
+      "url": "https://www.google.com/maps/contrib/110737949805310751235/reviews"
     }
   ]
 }
