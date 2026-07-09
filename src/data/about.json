@@ -1,0 +1,21 @@
+{
+  "eyebrow": "L'atelier",
+  "title": "Des fleurs sensibles, au rythme des saisons",
+  "lede": "L'atelier des jours fleuris, c'est Léana : une fleuriste événementielle qui compose des créations sur mesure pour les mariages, les événements et les lieux qui reçoivent.",
+  "body": "Ici, on ne travaille pas à partir d'un catalogue figé, mais avec ce que la saison offre de plus beau. Chaque projet est pensé comme une histoire : celle d'un lieu, d'une lumière, d'un moment à fleurir avec justesse.",
+  "demarcheTitle": "Comment nous travaillons",
+  "steps": [
+    {
+      "title": "L'écoute",
+      "copy": "Tout commence par une conversation : votre lieu, votre saison, vos couleurs et l'émotion recherchée."
+    },
+    {
+      "title": "La proposition",
+      "copy": "Une sélection florale claire, de saison, priorisée selon ce qui compte le plus pour vous."
+    },
+    {
+      "title": "La création",
+      "copy": "Composition, installation et petites attentions, pour un résultat fidèle à l'intention de départ."
+    }
+  ]
+}

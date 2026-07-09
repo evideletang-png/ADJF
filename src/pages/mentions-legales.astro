@@ -1,54 +1,24 @@
 ---
+import { getEntry, render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { SITE } from '../consts';
+
+const entry = await getEntry('legal', 'mentions-legales');
+if (!entry) throw new Error('Contenu légal manquant : mentions-legales');
+const { Content } = await render(entry);
 ---
 
 <BaseLayout
-  title="Mentions légales"
+  title={entry.data.title}
   description="Mentions légales de L'atelier des jours fleuris."
   noindex={true}
 >
   <section class="section">
     <div class="container narrow">
       <p class="eyebrow">Cadre légal</p>
-      <h1>Mentions légales</h1>
-      <p class="draft-note">
-        ⚠︎ Contenu à compléter avec les informations réelles de l’entreprise avant
-        la mise en ligne.
-      </p>
+      <h1>{entry.data.title}</h1>
       <div class="prose">
-        <h2>Éditeur du site</h2>
-        <p>
-          {SITE.name}<br />
-          [Statut juridique — ex. micro-entreprise]<br />
-          [Adresse]<br />
-          SIRET : [numéro]<br />
-          Email : {SITE.email}
-        </p>
-        <h2>Responsable de la publication</h2>
-        <p>{SITE.author}</p>
-        <h2>Hébergement</h2>
-        <p>[Nom de l’hébergeur], [adresse], [site web].</p>
-        <h2>Propriété intellectuelle</h2>
-        <p>
-          L’ensemble des contenus (textes, photographies, créations florales)
-          présents sur ce site est protégé. Toute reproduction sans autorisation est
-          interdite.
-        </p>
-        <h2>Contact</h2>
-        <p>Pour toute question : <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.</p>
+        <Content />
       </div>
     </div>
   </section>
 </BaseLayout>
-
-<style>
-  .draft-note {
-    background: var(--accent-tint);
-    border-radius: var(--radius-sm);
-    padding: 12px 16px;
-    font-size: 0.85rem;
-    color: var(--accent-strong);
-    margin-bottom: 24px;
-  }
-</style>

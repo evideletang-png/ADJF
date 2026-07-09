@@ -3,26 +3,35 @@ import Sprig from './Sprig.astro';
 
 // Diapositives du hero. Les visuels sont pour l'instant des dégradés
 // (marque-place) : il suffira d'ajouter de vraies photos en Phase 4.
-const slides = [
+interface Slide {
+  variant?: string;
+  eyebrow: string;
+  title: string;
+  copy: string;
+}
+interface Props {
+  slides?: Slide[];
+}
+
+const defaultSlides: Slide[] = [
   {
     variant: 'iris',
     eyebrow: 'Fleuriste événementielle',
-    title: 'Design floral <em>sur mesure</em>, sensible & de saison',
+    title: 'Design floral *sur mesure*, sensible & de saison',
     copy: 'Des compositions pensées autour du lieu, de la lumière et des fleurs du moment.',
   },
-  {
-    variant: '',
-    eyebrow: 'Mariages',
-    title: 'Des mariages fleuris <em>comme des jardins</em>',
-    copy: 'Bouquet, cérémonie, tables et scénographie : un fil floral cohérent, du oui au dernier verre.',
-  },
-  {
-    variant: 'sky',
-    eyebrow: 'Événements & entreprises',
-    title: 'Fleurir les lieux qui <em>reçoivent</em>',
-    copy: 'Réceptions, boutiques, bureaux : abonnements et créations ponctuelles au rythme des saisons.',
-  },
 ];
+
+const { slides = defaultSlides } = Astro.props;
+
+// Convertit *mot* en <em>mot</em> (accent italique), en échappant le HTML.
+function emphasize(str: string): string {
+  const escaped = str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  return escaped.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+}
 ---
 
 <section class="hero" aria-roledescription="diaporama" aria-label="Présentation de l'atelier">
@@ -38,7 +47,7 @@ const slides = [
           <div class="container hero-inner">
             <div class="hero-text">
               <p class="eyebrow hero-eyebrow">{s.eyebrow}</p>
-              <h1 set:html={s.title} />
+              <h1 set:html={emphasize(s.title)} />
               <p class="hero-copy">{s.copy}</p>
               <div class="hero-actions">
                 <a class="btn btn-primary" href="/contact">Demander un devis</a>

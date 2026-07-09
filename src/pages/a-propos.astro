@@ -2,21 +2,9 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Reviews from '../components/Reviews.astro';
 import { SITE } from '../consts';
+import about from '../data/about.json';
 
-const steps = [
-  {
-    title: 'L’écoute',
-    copy: 'Tout commence par une conversation : votre lieu, votre saison, vos couleurs et l’émotion recherchée.',
-  },
-  {
-    title: 'La proposition',
-    copy: 'Une sélection florale claire, de saison, priorisée selon ce qui compte le plus pour vous.',
-  },
-  {
-    title: 'La création',
-    copy: 'Composition, installation et petites attentions, pour un résultat fidèle à l’intention de départ.',
-  },
-];
+const steps = about.steps;
 
 const breadcrumb = {
   '@context': 'https://schema.org',
@@ -41,18 +29,10 @@ const breadcrumb = {
   <section class="section about-hero">
     <div class="container about-grid">
       <div>
-        <p class="eyebrow">L’atelier</p>
-        <h1>Des fleurs sensibles, au rythme des saisons</h1>
-        <p class="lead">
-          L’atelier des jours fleuris, c’est Léana : une fleuriste événementielle
-          qui compose des créations sur mesure pour les mariages, les événements et
-          les lieux qui reçoivent.
-        </p>
-        <p>
-          Ici, on ne travaille pas à partir d’un catalogue figé, mais avec ce que la
-          saison offre de plus beau. Chaque projet est pensé comme une histoire :
-          celle d’un lieu, d’une lumière, d’un moment à fleurir avec justesse.
-        </p>
+        <p class="eyebrow">{about.eyebrow}</p>
+        <h1>{about.title}</h1>
+        <p class="lead">{about.lede}</p>
+        <p>{about.body}</p>
         <div class="about-actions">
           <a class="btn btn-primary" href="/contact">Travailler ensemble</a>
           <a class="btn-link" href="/prestations">Voir les prestations</a>
@@ -68,7 +48,7 @@ const breadcrumb = {
     <div class="container">
       <div class="section-head">
         <p class="eyebrow">La démarche</p>
-        <h2>Comment nous travaillons</h2>
+        <h2>{about.demarcheTitle}</h2>
       </div>
       <div class="grid-auto">
         {

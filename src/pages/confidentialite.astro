@@ -1,51 +1,24 @@
 ---
+import { getEntry, render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { SITE } from '../consts';
+
+const entry = await getEntry('legal', 'confidentialite');
+if (!entry) throw new Error('Contenu légal manquant : confidentialite');
+const { Content } = await render(entry);
 ---
 
 <BaseLayout
-  title="Politique de confidentialité"
+  title={entry.data.title}
   description="Politique de confidentialité et gestion des données personnelles de L'atelier des jours fleuris."
   noindex={true}
 >
   <section class="section">
     <div class="container narrow">
       <p class="eyebrow">Cadre légal</p>
-      <h1>Confidentialité</h1>
-      <p class="draft-note">⚠︎ À adapter selon vos usages réels avant la mise en ligne.</p>
+      <h1>{entry.data.title}</h1>
       <div class="prose">
-        <h2>Données collectées</h2>
-        <p>
-          Via le formulaire de contact : nom, email, téléphone (facultatif), et les
-          informations relatives à votre projet.
-        </p>
-        <h2>Finalité</h2>
-        <p>
-          Ces données servent uniquement à répondre à votre demande et à préparer une
-          proposition. Elles ne sont ni vendues ni cédées à des tiers.
-        </p>
-        <h2>Durée de conservation</h2>
-        <p>
-          Les demandes sont conservées le temps nécessaire au suivi commercial, puis
-          supprimées.
-        </p>
-        <h2>Vos droits</h2>
-        <p>
-          Conformément au RGPD, vous disposez d’un droit d’accès, de rectification et
-          de suppression de vos données. Pour l’exercer, écrivez à <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
-        </p>
+        <Content />
       </div>
     </div>
   </section>
 </BaseLayout>
-
-<style>
-  .draft-note {
-    background: var(--accent-tint);
-    border-radius: var(--radius-sm);
-    padding: 12px 16px;
-    font-size: 0.85rem;
-    color: var(--accent-strong);
-    margin-bottom: 24px;
-  }
-</style>

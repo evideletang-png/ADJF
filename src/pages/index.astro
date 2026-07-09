@@ -7,6 +7,7 @@ import ArticleCard from '../components/ArticleCard.astro';
 import Reviews from '../components/Reviews.astro';
 import Carousel from '../components/Carousel.astro';
 import { SITE } from '../consts';
+import home from '../data/home.json';
 
 const prestations = (
   await getCollection('prestations', ({ data }) => !data.draft)
@@ -25,27 +26,14 @@ const realisations = [
   { title: 'Dîner privé', tag: 'Événement privé', variant: 'rose' },
 ];
 
-const intro = [
-  {
-    title: 'Sur mesure',
-    copy: 'Un univers floral adapté au lieu, à la saison et à l’intention de votre événement.',
-  },
-  {
-    title: 'De saison',
-    copy: 'Des fleurs choisies pour leur fraîcheur, leurs teintes et leur cohérence naturelle.',
-  },
-  {
-    title: 'Suivi clair',
-    copy: 'Un calendrier précis, de la première idée au jour J, pour avancer l’esprit tranquille.',
-  },
-];
+const intro = home.intro;
 ---
 
 <BaseLayout
   title="Fleuriste mariage, événementiel & abonnements floraux"
   description={SITE.description}
 >
-  <Hero />
+  <Hero slides={home.heroSlides} />
 
   <!-- Positionnement -->
   <section class="section-tight intro">
@@ -95,10 +83,7 @@ const intro = [
   <!-- Citation -->
   <section class="quote-band">
     <div class="container">
-      <p class="reveal">
-        « Chaque projet commence par une conversation : le lieu, la saison, les
-        couleurs, l’émotion — puis une proposition florale claire. »
-      </p>
+      <p class="reveal">« {home.quote} »</p>
     </div>
   </section>
 
@@ -168,9 +153,9 @@ const intro = [
     <div class="container">
       <div class="cta-band reveal">
         <div>
-          <p class="eyebrow">Votre projet</p>
-          <h2>Parlons de vos fleurs</h2>
-          <p>Racontez-nous votre événement : nous préparons une proposition sur mesure, sans engagement.</p>
+          <p class="eyebrow">{home.cta.eyebrow}</p>
+          <h2>{home.cta.title}</h2>
+          <p>{home.cta.copy}</p>
         </div>
         <a class="btn btn-primary" href="/contact">Demander un devis</a>
       </div>

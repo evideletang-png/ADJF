@@ -120,3 +120,88 @@ collections:
       - *faq_field
       - { label: Brouillon (non publié), name: draft, widget: boolean, default: false }
       - { label: Contenu détaillé, name: body, widget: markdown }
+
+  # ------------------------------------------------------------------ #
+  - name: pages
+    label: Textes des pages
+    description: Les textes de l'accueil et de la page À propos.
+    files:
+      - name: home
+        label: Page d'accueil
+        file: /src/data/home.json
+        fields:
+          - label: Diaporama d'accueil
+            name: heroSlides
+            widget: list
+            label_singular: Diapo
+            summary: '{{fields.eyebrow}}'
+            fields:
+              - { label: Sur-titre, name: eyebrow, widget: string }
+              - label: Titre
+                name: title
+                widget: string
+                hint: 'Entourez un mot d''étoiles pour l''afficher en italique, ex. « Design floral *sur mesure* ».'
+              - { label: Texte, name: copy, widget: text }
+              - label: Ambiance
+                name: variant
+                widget: select
+                default: ''
+                required: false
+                options: *variant_options
+          - label: Trois points clés
+            name: intro
+            widget: list
+            label_singular: Point
+            summary: '{{fields.title}}'
+            fields:
+              - { label: Titre, name: title, widget: string }
+              - { label: Texte, name: copy, widget: text }
+          - { label: Citation, name: quote, widget: text }
+          - label: Appel à l'action
+            name: cta
+            widget: object
+            fields:
+              - { label: Sur-titre, name: eyebrow, widget: string }
+              - { label: Titre, name: title, widget: string }
+              - { label: Texte, name: copy, widget: text }
+      - name: about
+        label: Page À propos
+        file: /src/data/about.json
+        fields:
+          - { label: Sur-titre, name: eyebrow, widget: string }
+          - { label: Titre, name: title, widget: string }
+          - { label: Accroche, name: lede, widget: text }
+          - { label: Paragraphe, name: body, widget: text }
+          - { label: Titre de la section démarche, name: demarcheTitle, widget: string }
+          - label: Étapes de la démarche
+            name: steps
+            widget: list
+            label_singular: Étape
+            summary: '{{fields.title}}'
+            fields:
+              - { label: Titre, name: title, widget: string }
+              - { label: Texte, name: copy, widget: text }
+
+  # ------------------------------------------------------------------ #
+  - name: legal
+    label: Pages légales
+    description: Mentions légales, CGV, confidentialité.
+    files:
+      - name: mentions-legales
+        label: Mentions légales
+        file: /src/content/legal/mentions-legales.md
+        fields:
+          - { label: Titre, name: title, widget: string }
+          - { label: Contenu, name: body, widget: markdown }
+      - name: cgv
+        label: Conditions générales de vente
+        file: /src/content/legal/cgv.md
+        fields:
+          - { label: Titre, name: title, widget: string }
+          - { label: Contenu, name: body, widget: markdown }
+      - name: confidentialite
+        label: Confidentialité
+        file: /src/content/legal/confidentialite.md
+        fields:
+          - { label: Titre, name: title, widget: string }
+          - { label: Contenu, name: body, widget: markdown }

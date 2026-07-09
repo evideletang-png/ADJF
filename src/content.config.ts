@@ -46,4 +46,13 @@ const prestations = defineCollection({
   }),
 });
 
-export const collections = { blog, prestations };
+// Pages légales — éditables au CMS.
+const legal = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/legal' }),
+  schema: z.object({
+    title: z.string(),
+    updatedDate: z.coerce.date().optional(),
+  }),
+});
+
+export const collections = { blog, prestations, legal };

@@ -1,0 +1,42 @@
+{
+  "heroSlides": [
+    {
+      "variant": "iris",
+      "eyebrow": "Fleuriste événementielle",
+      "title": "Design floral *sur mesure*, sensible & de saison",
+      "copy": "Des compositions pensées autour du lieu, de la lumière et des fleurs du moment."
+    },
+    {
+      "variant": "",
+      "eyebrow": "Mariages",
+      "title": "Des mariages fleuris *comme des jardins*",
+      "copy": "Bouquet, cérémonie, tables et scénographie : un fil floral cohérent, du oui au dernier verre."
+    },
+    {
+      "variant": "sky",
+      "eyebrow": "Événements & entreprises",
+      "title": "Fleurir les lieux qui *reçoivent*",
+      "copy": "Réceptions, boutiques, bureaux : abonnements et créations ponctuelles au rythme des saisons."
+    }
+  ],
+  "intro": [
+    {
+      "title": "Sur mesure",
+      "copy": "Un univers floral adapté au lieu, à la saison et à l'intention de votre événement."
+    },
+    {
+      "title": "De saison",
+      "copy": "Des fleurs choisies pour leur fraîcheur, leurs teintes et leur cohérence naturelle."
+    },
+    {
+      "title": "Suivi clair",
+      "copy": "Un calendrier précis, de la première idée au jour J, pour avancer l'esprit tranquille."
+    }
+  ],
+  "quote": "Chaque projet commence par une conversation : le lieu, la saison, les couleurs, l'émotion — puis une proposition florale claire.",
+  "cta": {
+    "eyebrow": "Votre projet",
+    "title": "Parlons de vos fleurs",
+    "copy": "Racontez-nous votre événement : nous préparons une proposition sur mesure, sans engagement."
+  }
+}
