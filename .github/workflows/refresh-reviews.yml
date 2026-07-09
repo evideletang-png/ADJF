@@ -42,6 +42,7 @@ jobs:
         env:
           GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
           GOOGLE_PLACE_ID: ${{ secrets.GOOGLE_PLACE_ID }}
+          GOOGLE_PLACE_COORDS: ${{ secrets.GOOGLE_PLACE_COORDS }}
         run: node scripts/fetch-reviews.mjs
 
       - name: Enregistrer et redéployer si les avis ont changé
