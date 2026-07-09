@@ -1,6 +1,7 @@
 ---
 import { SITE, NAV, LEGAL_NAV } from '../consts';
 import Sprig from './Sprig.astro';
+import Email from './Email.astro';
 const year = new Date().getFullYear();
 ---
 
@@ -23,7 +24,7 @@ const year = new Date().getFullYear();
     <div class="footer-col">
       <h2>Contact</h2>
       <ul>
-        {SITE.email && <li><a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>}
+        {SITE.email && <li><Email /></li>}
         {SITE.phone && <li><a href={`tel:${SITE.phone.replace(/\s/g, '')}`}>{SITE.phone}</a></li>}
         <li>Zone : {SITE.areaServed}</li>
         <li><a href={SITE.instagram} target="_blank" rel="noreferrer me">Instagram</a></li>

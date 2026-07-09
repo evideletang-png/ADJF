@@ -1,5 +1,5 @@
 ---
-import { SITE } from '../consts';
+import Email from './Email.astro';
 
 /*
  * Formulaire de contact — MAQUETTE fonctionnelle (Phase 1).
@@ -80,7 +80,7 @@ import { SITE } from '../consts';
   <div class="form-foot">
     <button class="btn btn-primary" type="submit">Envoyer la demande</button>
     <p class="form-hint">
-      Réponse sous 48&nbsp;h. Ou écrivez directement à <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+      Réponse sous 48&nbsp;h. Ou écrivez directement à <Email />.
     </p>
   </div>
 

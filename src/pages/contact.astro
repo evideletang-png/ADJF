@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ContactForm from '../components/ContactForm.astro';
+import Email from '../components/Email.astro';
 import { SITE } from '../consts';
 
 const breadcrumb = {
@@ -43,7 +44,7 @@ const breadcrumb = {
           <ul>
             <li>
               <span class="label">Email</span>
-              <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+              <Email />
             </li>
             {
               SITE.phone && (

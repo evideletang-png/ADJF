@@ -1,0 +1,48 @@
+---
+// Adresse e-mail protégée contre les robots spammeurs.
+// L'adresse n'apparaît PAS en clair dans le HTML : elle est encodée (base64)
+// et reconstruite côté navigateur en lien mailto. Sans JavaScript, un repli
+// lisible mais non exploitable par un robot est affiché.
+import { SITE } from '../consts';
+
+interface Props {
+  subject?: string;
+  label?: string;
+  class?: string;
+}
+const { subject = '', label, class: className = '' } = Astro.props;
+
+const enc = Buffer.from(SITE.email).toString('base64');
+const encSubject = subject ? Buffer.from(subject).toString('base64') : '';
+const [user, domain] = SITE.email.split('@');
+const fallback = `${user} [arobase] ${domain}`;
+---
+
+<span
+  class:list={['protected-email', className]}
+  data-e={enc}
+  data-s={encSubject}
+  data-l={label ?? ''}
+>
+  <span class="pe-fallback">{fallback}</span>
+</span>
+
+<script>
+  document.querySelectorAll('.protected-email').forEach((el) => {
+    const e = el.getAttribute('data-e');
+    if (!e) return;
+    try {
+      const addr = atob(e);
+      const s = el.getAttribute('data-s');
+      const subject = s ? atob(s) : '';
+      const label = el.getAttribute('data-l') || addr;
+      const a = document.createElement('a');
+      a.href = 'mailto:' + addr + (subject ? '?subject=' + encodeURIComponent(subject) : '');
+      a.textContent = label;
+      a.rel = 'nofollow';
+      el.replaceChildren(a);
+    } catch (_) {
+      /* on garde le repli lisible */
+    }
+  });
+</script>

@@ -18,4 +18,4 @@ Les demandes sont conservées le temps nécessaire au suivi commercial, puis sup
 
 ## Vos droits
 
-Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Pour l'exercer, écrivez à contact@atelierjf.fr.
+Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Pour l'exercer, écrivez à contact [arobase] atelierjf.fr.

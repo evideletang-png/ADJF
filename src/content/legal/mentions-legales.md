@@ -10,7 +10,7 @@ L'atelier des jours fleuris
 [Statut juridique — ex. micro-entreprise]
 [Adresse]
 SIRET : [numéro]
-Email : contact@atelierjf.fr
+Email : contact [arobase] atelierjf.fr
 
 ## Responsable de la publication
 
@@ -26,4 +26,4 @@ L'ensemble des contenus (textes, photographies, créations florales) présents s
 
 ## Contact
 
-Pour toute question : contact@atelierjf.fr.
+Pour toute question : contact [arobase] atelierjf.fr.

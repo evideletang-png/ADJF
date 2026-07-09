@@ -36,7 +36,6 @@ const floristLd = {
   url: SITE.url,
   areaServed: SITE.areaServed,
   founder: { '@type': 'Person', name: SITE.author },
-  email: SITE.email,
   ...(SITE.phone ? { telephone: SITE.phone } : {}),
   sameAs: [SITE.instagram, SITE.googleBusinessUrl].filter(Boolean),
 };
