@@ -304,8 +304,14 @@ import Email from './Email.astro';
       try {
         const res = await fetch('/api/contact.php', { method: 'POST', body: data });
         const json = await res.json().catch(() => ({ ok: res.ok }));
-        if (json && json.ok) {
+        if (json && json.ok && json.delivered) {
           showSuccess(type, firstName);
+        } else if (json && json.ok) {
+          // L'envoi n'est pas encore configuré : on reste honnête (pas de faux « envoyé »).
+          if (status)
+            status.textContent =
+              'Merci ! Le formulaire n’est pas encore tout à fait finalisé — écrivez-nous directement (adresse ci-dessous), on vous répond vite.';
+          if (submitBtn) submitBtn.disabled = false;
         } else {
           if (status)
             status.textContent =

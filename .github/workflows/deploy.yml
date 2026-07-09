@@ -40,6 +40,7 @@ jobs:
           MAIL_PASS: ${{ secrets.OVH_MAIL_PASSWORD }}
           MAIL_HOST: ${{ secrets.OVH_MAIL_HOST }}
           MAIL_PORT: ${{ secrets.OVH_MAIL_PORT }}
+          MAIL_TO: ${{ secrets.OVH_MAIL_TO }}
         run: |
           if [ -z "$MAIL_USER" ]; then
             echo "Aucun secret e-mail configuré — le formulaire reste en mode démo."
@@ -51,7 +52,7 @@ jobs:
             --argjson port "${MAIL_PORT:-465}" \
             --arg user "$MAIL_USER" \
             --arg pass "$MAIL_PASS" \
-            --arg to "$MAIL_USER" \
+            --arg to "${MAIL_TO:-$MAIL_USER}" \
             '{host: $host, port: $port, user: $user, pass: $pass, to: $to}' \
             > dist/api/mailer.secret.json
           echo "Config e-mail générée."
