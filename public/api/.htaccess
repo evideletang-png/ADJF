@@ -1,0 +1,4 @@
+# Ne jamais servir le fichier d'identifiants SMTP (généré au déploiement)
+<Files "mailer.secret.json">
+  Require all denied
+</Files>

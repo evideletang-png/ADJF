@@ -1,53 +1,31 @@
 ---
 import Carousel from './Carousel.astro';
 import { SITE } from '../consts';
+import { getReviews } from '../lib/googleReviews';
 
-/*
- * MAQUETTE — avis clients.
- * En Phase 3, ce composant sera alimenté par l'API Google Places
- * (récupération côté serveur + mise en cache), et une donnée structurée
- * AggregateRating sera émise sur la fiche Florist. Pour l'instant, les
- * avis ci-dessous sont des exemples et un bandeau le signale honnêtement.
- */
-const reviews = [
-  {
-    author: 'Camille & Clément',
-    rating: 5,
-    text: "Léana a capté exactement l'ambiance que nous imaginions pour notre mariage. Des fleurs d'une fraîcheur incroyable et un sens du détail rare.",
-    date: 'Mai 2026',
-  },
-  {
-    author: 'Maison Pisco',
-    rating: 5,
-    text: 'Nos compositions hebdomadaires subliment la boutique. Toujours de saison, toujours justes.',
-    date: 'Avril 2026',
-  },
-  {
-    author: 'Sophie D.',
-    rating: 5,
-    text: "Un atelier passionnant et une vraie générosité dans la transmission. On repart des étoiles plein les yeux.",
-    date: 'Mars 2026',
-  },
-  {
-    author: 'Domaine des Tilleuls',
-    rating: 5,
-    text: 'Scénographie florale à couper le souffle pour notre séminaire. Ponctuelle, à l’écoute, vraiment professionnelle.',
-    date: 'Février 2026',
-  },
-  {
-    author: 'Anaïs & Théo',
-    rating: 4,
-    text: 'Superbe travail pour notre cérémonie. Quelques ajustements de dernière minute gérés avec beaucoup de calme.',
-    date: 'Janvier 2026',
-  },
-];
+const data = await getReviews();
+const reviews = data.reviews;
+const count = data.count;
+const average = data.average.toFixed(1);
+const averageStars = Math.round(data.average);
+const connected = data.source === 'google';
 
-const count = reviews.length;
-const average = (
-  reviews.reduce((sum, r) => sum + r.rating, 0) / count
-).toFixed(1);
-const averageStars = Math.round(Number(average));
-const connected = Boolean(SITE.googleBusinessUrl);
+// Données structurées : note agrégée (étoiles dans Google) — uniquement
+// quand on affiche de vrais avis Google.
+const aggregateLd = connected
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'Florist',
+      '@id': SITE.url + '#business',
+      name: SITE.name,
+      url: SITE.url,
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: Number(average),
+        reviewCount: count,
+      },
+    }
+  : null;
 ---
 
 <div class="reviews">
@@ -65,7 +43,7 @@ const connected = Boolean(SITE.googleBusinessUrl);
       </span>
       <span class="score-meta">
         {count} avis&nbsp;·&nbsp;
-        {connected ? (
+        {SITE.googleBusinessUrl ? (
           <a href={SITE.googleBusinessUrl} target="_blank" rel="noreferrer">Google</a>
         ) : (
           'Google'
@@ -86,7 +64,7 @@ const connected = Boolean(SITE.googleBusinessUrl);
           <p class="review-text">{r.text}</p>
           <footer class="review-foot">
             <cite>{r.author}</cite>
-            <span>{r.date} · via Google</span>
+            <span>{r.date ? `${r.date} · ` : ''}via Google</span>
           </footer>
         </blockquote>
       ))
@@ -96,11 +74,13 @@ const connected = Boolean(SITE.googleBusinessUrl);
   {
     !connected && (
       <p class="reviews-note">
-        Avis affichés à titre d'exemple. La connexion aux avis Google réels est
-        prévue en Phase&nbsp;3 (API Google Places).
+        Avis affichés à titre d'exemple. Les vrais avis Google s'afficheront dès
+        que la clé API et l'ID de fiche seront renseignés (Phase 3).
       </p>
     )
   }
+
+  {aggregateLd && <script type="application/ld+json" set:html={JSON.stringify(aggregateLd)} />}
 </div>
 
 <style>

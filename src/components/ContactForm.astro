@@ -243,17 +243,27 @@ import Email from './Email.astro';
   };
 
   if (form) {
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const data = new FormData(form);
+    const theForm = form;
+    const submitBtn = theForm.querySelector<HTMLButtonElement>('button[type="submit"]');
 
-      // Anti-spam : si le champ piège est rempli, on simule un succès sans rien faire.
+    const showSuccess = (type: string, firstName: string) => {
+      if (status) status.textContent = '';
+      theForm.hidden = true;
+      if (success && successMsg) {
+        successMsg.textContent = `${firstName ? firstName + ', m' : 'M'}erci. ${byType[type] ?? byType['Autre']}`;
+        success.classList.add('show');
+        success.removeAttribute('hidden');
+        success.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    };
+
+    theForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = new FormData(theForm);
+
+      // Anti-spam : si le champ piège est rempli, faux succès (rien n'est envoyé).
       if ((data.get('entreprise') as string)?.trim()) {
-        form.hidden = true;
-        if (success) {
-          success.classList.add('show');
-          success.removeAttribute('hidden');
-        }
+        showSuccess((data.get('projectType') as string) || 'Autre', '');
         return;
       }
 
@@ -265,7 +275,7 @@ import Email from './Email.astro';
       ];
       for (const [field, label] of required) {
         const value = (data.get(field) as string)?.trim();
-        const el = form.querySelector<HTMLElement>(`[name="${field}"]`);
+        const el = theForm.querySelector<HTMLElement>(`[name="${field}"]`);
         if (!value) {
           if (status) status.textContent = `Merci d’indiquer ${label}.`;
           el?.setAttribute('aria-invalid', 'true');
@@ -277,24 +287,36 @@ import Email from './Email.astro';
       const email = (data.get('email') as string).trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         if (status) status.textContent = 'Cet email semble incorrect.';
-        form.querySelector('[name="email"]')?.setAttribute('aria-invalid', 'true');
+        theForm.querySelector('[name="email"]')?.setAttribute('aria-invalid', 'true');
         return;
       }
-      if (!(form.querySelector('[name="consent"]') as HTMLInputElement)?.checked) {
+      if (!(theForm.querySelector('[name="consent"]') as HTMLInputElement)?.checked) {
         if (status) status.textContent = 'Merci de cocher la case de consentement.';
         return;
       }
 
-      // MAQUETTE : ici, en Phase 3, on enverra `data` à /api/contact (Gmail).
       const type = (data.get('projectType') as string) || 'Autre';
-      const name = (data.get('name') as string).trim().split(' ')[0];
-      if (status) status.textContent = '';
-      form.hidden = true;
-      if (success && successMsg) {
-        successMsg.textContent = `${name ? name + ', m' : 'M'}erci. ${byType[type] ?? byType['Autre']}`;
-        success.classList.add('show');
-        success.removeAttribute('hidden');
-        success.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const firstName = (data.get('name') as string).trim().split(' ')[0];
+
+      // Envoi au serveur (script PHP -> e-mail OVH)
+      if (status) status.textContent = 'Envoi en cours…';
+      if (submitBtn) submitBtn.disabled = true;
+      try {
+        const res = await fetch('/api/contact.php', { method: 'POST', body: data });
+        const json = await res.json().catch(() => ({ ok: res.ok }));
+        if (json && json.ok) {
+          showSuccess(type, firstName);
+        } else {
+          if (status)
+            status.textContent =
+              'Une erreur est survenue. Merci de réessayer, ou de nous écrire directement (adresse ci-dessous).';
+          if (submitBtn) submitBtn.disabled = false;
+        }
+      } catch (_) {
+        if (status)
+          status.textContent =
+            'Envoi impossible pour le moment. Réessayez, ou écrivez-nous directement (adresse ci-dessous).';
+        if (submitBtn) submitBtn.disabled = false;
       }
     });
   }

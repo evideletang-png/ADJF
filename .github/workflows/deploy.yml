@@ -29,7 +29,32 @@ jobs:
         run: npm ci
 
       - name: Construire le site (génère dist/)
+        env:
+          GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
+          GOOGLE_PLACE_ID: ${{ secrets.GOOGLE_PLACE_ID }}
         run: npm run build
+
+      - name: Générer la config e-mail du formulaire (depuis les secrets)
+        env:
+          MAIL_USER: ${{ secrets.OVH_MAIL_USER }}
+          MAIL_PASS: ${{ secrets.OVH_MAIL_PASSWORD }}
+          MAIL_HOST: ${{ secrets.OVH_MAIL_HOST }}
+          MAIL_PORT: ${{ secrets.OVH_MAIL_PORT }}
+        run: |
+          if [ -z "$MAIL_USER" ]; then
+            echo "Aucun secret e-mail configuré — le formulaire reste en mode démo."
+            exit 0
+          fi
+          mkdir -p dist/api
+          jq -n \
+            --arg host "${MAIL_HOST:-ssl0.ovh.net}" \
+            --argjson port "${MAIL_PORT:-465}" \
+            --arg user "$MAIL_USER" \
+            --arg pass "$MAIL_PASS" \
+            --arg to "$MAIL_USER" \
+            '{host: $host, port: $port, user: $user, pass: $pass, to: $to}' \
+            > dist/api/mailer.secret.json
+          echo "Config e-mail générée."
 
       # Envoi via SFTP (port 22) avec repli en FTP simple (port 21).
       # OVH cluster129 refuse le FTPS explicite ; SFTP est la bonne méthode.
