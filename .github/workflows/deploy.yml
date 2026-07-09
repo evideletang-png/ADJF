@@ -29,9 +29,6 @@ jobs:
         run: npm ci
 
       - name: Construire le site (génère dist/)
-        env:
-          GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
-          GOOGLE_PLACE_ID: ${{ secrets.GOOGLE_PLACE_ID }}
         run: npm run build
 
       - name: Générer la config e-mail du formulaire (depuis les secrets)

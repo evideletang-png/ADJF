@@ -1,0 +1,62 @@
+name: Rafraîchir les avis Google
+
+# Récupère les avis Google 1 fois par mois (dernier jour du mois) et, si
+# ça a changé, les enregistre puis relance un déploiement.
+# Déclenchable aussi manuellement (onglet Actions -> Run workflow).
+on:
+  schedule:
+    - cron: '0 6 28-31 * *' # se déclenche les 28→31 à 06:00 UTC…
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ne continuer que le dernier jour du mois (sauf déclenchement manuel)
+        id: guard
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "run=yes" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if [ "$(date -u -d '+1 day' +%d)" = "01" ]; then
+            echo "run=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "Pas le dernier jour du mois — on s'arrête."
+            echo "run=no" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Installer Node.js
+        if: steps.guard.outputs.run == 'yes'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Récupérer les avis Google (1 appel API)
+        if: steps.guard.outputs.run == 'yes'
+        env:
+          GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
+          GOOGLE_PLACE_ID: ${{ secrets.GOOGLE_PLACE_ID }}
+        run: node scripts/fetch-reviews.mjs
+
+      - name: Enregistrer et redéployer si les avis ont changé
+        if: steps.guard.outputs.run == 'yes'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git diff --quiet -- src/data/google-reviews.json; then
+            echo "Aucun changement — rien à déployer."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/google-reviews.json
+          git commit -m "Rafraîchir les avis Google (mensuel)"
+          git push
+          # Relance le déploiement pour publier les nouveaux avis
+          gh workflow run deploy.yml --ref main || echo "Dispatch impossible — le prochain déploiement publiera les avis."
