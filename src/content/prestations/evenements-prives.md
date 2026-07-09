@@ -2,9 +2,14 @@
 title: Événements privés
 description: Fleurs pour anniversaires, dîners, baptêmes et fêtes de famille — des compositions à l'échelle de votre moment, pensées pour le lieu et l'ambiance.
 order: 2
+tags:
+  - Dîner
+  - Anniversaire
+  - Baptême
+  - Décor
+priceFrom: Sur devis
+imageAlt: ''
 variant: rose
-tags: [Dîner, Anniversaire, Baptême, Décor]
-priceFrom: 'Sur devis'
 faq:
   - q: Y a-t-il un budget minimum pour un événement privé ?
     a: Non, la proposition s'adapte à la taille de l'événement, d'un simple centre de table à une décoration complète.
