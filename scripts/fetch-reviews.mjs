@@ -2,16 +2,15 @@
 // src/data/google-reviews.json. Exécuté ~1 fois par mois par le workflow
 // « refresh-reviews » (donc 1 seul appel API/mois → coût ~0 €).
 //
-// GOOGLE_PLACE_ID peut être :
-//   - un identifiant de fiche « ChIJ… » (ou « places/ChIJ… »), utilisé directement ;
-//   - OU un simple texte de recherche (ex. « L'atelier des jours fleuris Pontlevoy ») :
-//     le script retrouve alors la fiche automatiquement et affiche son ID.
+// GOOGLE_PLACE_ID : soit un identifiant « ChIJ… », soit un texte de recherche.
+// GOOGLE_PLACE_COORDS (optionnel) : « lat,lng » pour cibler la recherche.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const OUT = fileURLToPath(new URL('../src/data/google-reviews.json', import.meta.url));
 const key = process.env.GOOGLE_PLACES_API_KEY;
 const idOrQuery = (process.env.GOOGLE_PLACE_ID || '').trim();
+const coordsRaw = (process.env.GOOGLE_PLACE_COORDS || '').trim();
 
 if (!key || !idOrQuery) {
   console.log('GOOGLE_PLACES_API_KEY ou GOOGLE_PLACE_ID manquant — rien à faire.');
@@ -19,35 +18,47 @@ if (!key || !idOrQuery) {
 }
 
 const isPlaceId = /^ChIJ|^places\//i.test(idOrQuery);
+const FIELD_MASK = 'id,displayName,rating,userRatingCount,reviews';
+
+async function readJson(res) {
+  const raw = await res.text();
+  console.log(`HTTP ${res.status} — réponse : ${raw ? raw.slice(0, 350) : '(vide)'}`);
+  try {
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
 
 async function getPlace() {
   if (isPlaceId) {
     const id = idOrQuery.replace(/^places\//i, '');
     const res = await fetch(
       `https://places.googleapis.com/v1/places/${encodeURIComponent(id)}?languageCode=fr`,
-      {
-        headers: {
-          'X-Goog-Api-Key': key,
-          'X-Goog-FieldMask': 'id,displayName,rating,userRatingCount,reviews',
-        },
-      }
+      { headers: { 'X-Goog-Api-Key': key, 'X-Goog-FieldMask': FIELD_MASK } }
     );
-    return { res, place: await res.json().catch(() => ({})) };
+    return { res, place: await readJson(res) };
   }
-  // Recherche par texte
+
+  const body = { textQuery: idOrQuery, languageCode: 'fr', maxResultCount: 1 };
+  const coords = coordsRaw.split(',').map((n) => Number(n.trim()));
+  if (coords.length === 2 && coords.every((n) => Number.isFinite(n))) {
+    body.locationBias = {
+      circle: { center: { latitude: coords[0], longitude: coords[1] }, radius: 2000 },
+    };
+  }
+
   const res = await fetch('https://places.googleapis.com/v1/places:searchText', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'X-Goog-Api-Key': key,
-      'X-Goog-FieldMask':
-        'places.id,places.displayName,places.rating,places.userRatingCount,places.reviews',
+      'X-Goog-FieldMask': 'places.' + FIELD_MASK.split(',').join(',places.'),
     },
-    body: JSON.stringify({ textQuery: idOrQuery, languageCode: 'fr' }),
+    body: JSON.stringify(body),
   });
-  const json = await res.json().catch(() => ({}));
-  const place = json.places && json.places[0];
-  return { res, place, all: json };
+  const json = await readJson(res);
+  return { res, place: json.places && json.places[0], all: json };
 }
 
 const { res, place, all } = await getPlace();
@@ -57,7 +68,7 @@ if (!res.ok) {
   process.exit(1);
 }
 if (!place || !place.id) {
-  console.error('Fiche introuvable pour :', idOrQuery, '—', JSON.stringify(all || {}).slice(0, 300));
+  console.error('Fiche introuvable pour la recherche fournie.');
   process.exit(1);
 }
 
