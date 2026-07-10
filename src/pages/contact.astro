@@ -1,7 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ContactForm from '../components/ContactForm.astro';
-import Email from '../components/Email.astro';
 import { SITE } from '../consts';
 
 const breadcrumb = {
@@ -42,10 +41,6 @@ const breadcrumb = {
         <div class="info-card">
           <h2>En direct</h2>
           <ul>
-            <li>
-              <span class="label">Email</span>
-              <Email />
-            </li>
             {
               SITE.phone && (
                 <li>

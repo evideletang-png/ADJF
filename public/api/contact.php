@@ -35,13 +35,37 @@ $budget     = field('budget');
 $message    = field('message');
 $consent    = field('consent');
 $honeypot   = field('entreprise'); // champ piège
+$answer     = field('answer');     // réponse au captcha
+$challenge  = field('challenge');  // clé de la question posée
+$elapsed    = field('elapsed');    // durée de remplissage en ms
 
 // ------- Anti-spam -------
 // 1) Honeypot rempli -> on fait comme si tout allait bien, sans rien envoyer.
 if ($honeypot !== '') {
     respond(true, ['delivered' => false]);
 }
-// 2) Limitation simple par IP (anti-flood léger).
+// 2) Piège temporel + preuve d'exécution JS : un envoi sans durée mesurée, ou
+//    plus rapide que 3 s, vient forcément d'un robot qui poste en direct.
+if ($elapsed === '' || (int) $elapsed < 3000) {
+    http_response_code(422);
+    respond(false, ['error' => 'invalid']);
+}
+// 3) Captcha : la question est choisie côté client, mais seule cette liste
+//    (jamais exposée dans le HTML) connaît les bonnes réponses.
+//    ⚠️ Garder ces clés synchronisées avec CHALLENGES dans ContactForm.astro.
+$answers = [
+    'q1' => ['5', 'cinq'],
+    'q2' => ['5', 'cinq'],
+    'q3' => ['7', 'sept'],
+    'q4' => ['8', 'huit'],
+];
+$normalize = fn($s) => preg_replace('/\s+/', '', strtolower(trim((string) $s)));
+$expected = $answers[$challenge] ?? null;
+if (!$expected || !in_array($normalize($answer), array_map($normalize, $expected), true)) {
+    http_response_code(422);
+    respond(false, ['error' => 'captcha']);
+}
+// 4) Limitation simple par IP (anti-flood léger).
 $ip = $_SERVER['REMOTE_ADDR'] ?? 'x';
 $throttleFile = sys_get_temp_dir() . '/adjf_' . md5($ip);
 if (is_file($throttleFile) && (time() - filemtime($throttleFile)) < 20) {
@@ -72,10 +96,34 @@ $user = $cfg['user'];
 $pass = $cfg['pass'];
 $to   = $cfg['to'] ?? $user;
 
-// ------- Contenu des e-mails -------
+// ------- Contenu des e-mails (textes éditables depuis l'admin) -------
+// Les textes ci-dessous peuvent être personnalisés dans l'espace
+// d'administration (fichier api/emails.json, édité via le CMS). Si le fichier
+// est absent ou incomplet, on retombe sur les valeurs par défaut : rien ne casse.
+$tpl = [];
+$tplFile = __DIR__ . '/emails.json';
+if (is_file($tplFile)) {
+    $decoded = json_decode((string) file_get_contents($tplFile), true);
+    if (is_array($decoded)) {
+        $tpl = $decoded;
+    }
+}
+
 $firstName = trim(explode(' ', $name)[0]);
 
-$byType = [
+// Variables remplaçables dans les textes : {prenom} {nom} {type} {date} {lieu} {budget}
+$vars = [
+    '{prenom}' => $firstName,
+    '{nom}'    => $name,
+    '{type}'   => $type,
+    '{date}'   => $eventDate,
+    '{lieu}'   => $location,
+    '{budget}' => $budget,
+];
+$render = fn($s) => strtr((string) $s, $vars);
+
+// Intro selon le type de projet — valeurs de repli si le CMS n'est pas renseigné.
+$defaultIntros = [
     'Mariage'                  => "Nous préparons une proposition florale pour votre mariage et revenons vers vous sous 48 h.",
     'Événement privé'          => "Votre demande pour un événement privé est bien notée. Nous vous recontactons sous 48 h.",
     'Événement professionnel'  => "Votre demande professionnelle a été transmise. Nous revenons vers vous sous 48 h.",
@@ -83,10 +131,20 @@ $byType = [
     'Atelier floral'           => "Votre intérêt pour un atelier est enregistré. Nous vous envoyons les prochaines dates sous 48 h.",
     'Autre'                    => "Votre message a bien été transmis. Nous vous répondons sous 48 h.",
 ];
-$replyIntro = $byType[$type] ?? $byType['Autre'];
+// Le CMS fournit une liste [{ type, message }] : on l'indexe par type.
+$intros = $defaultIntros;
+if (!empty($tpl['client']['intros']) && is_array($tpl['client']['intros'])) {
+    $intros = [];
+    foreach ($tpl['client']['intros'] as $row) {
+        if (is_array($row) && !empty($row['type'])) {
+            $intros[$row['type']] = (string) ($row['message'] ?? '');
+        }
+    }
+}
+$replyIntro = $intros[$type] ?? $intros['Autre'] ?? $defaultIntros['Autre'];
 
-// Message pour l'atelier (notification interne)
-$adminSubject = "[$type] Nouvelle demande — $name";
+// Message pour l'atelier (notification interne) — corps généré automatiquement.
+$adminSubject = $render($tpl['admin']['subject'] ?? "[{type}] Nouvelle demande — {nom}");
 $adminLines = [
     "Nouvelle demande depuis le site atelierjf.fr",
     "",
@@ -103,22 +161,26 @@ $adminLines = [
 ];
 $adminBody = implode("\r\n", $adminLines);
 
-// Accusé de réception au client
-$clientSubject = "Votre demande — L'atelier des jours fleuris";
+// Accusé de réception au client — objet, intro, récapitulatif et signature éditables.
+$clientSubject = $render($tpl['client']['subject'] ?? "Votre demande — L'atelier des jours fleuris");
+$recapTitle    = $render($tpl['client']['recapTitle'] ?? 'Récapitulatif de votre demande :');
+$signature     = $render($tpl['client']['signature'] ?? "À très vite,\nL'atelier des jours fleuris\nhttps://www.atelierjf.fr");
+
 $clientLines = [
     ($firstName !== '' ? "$firstName," : 'Bonjour,'),
     '',
-    $replyIntro,
+    $render($replyIntro),
     '',
-    'Récapitulatif de votre demande :',
+    $recapTitle,
     "• Type : $type",
     ($location !== '' ? "• Lieu : $location" : null),
     ($eventDate !== '' ? "• Date : $eventDate" : null),
     '',
-    'À très vite,',
-    "L'atelier des jours fleuris",
-    'https://www.atelierjf.fr',
 ];
+// La signature peut tenir sur plusieurs lignes (séparées par des retours à la ligne).
+foreach (preg_split('/\r\n|\r|\n/', $signature) as $sigLine) {
+    $clientLines[] = $sigLine;
+}
 $clientBody = implode("\r\n", array_values(array_filter($clientLines, fn($l) => $l !== null)));
 
 // ------- Envoi SMTP -------

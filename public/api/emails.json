@@ -1,0 +1,18 @@
+{
+  "client": {
+    "subject": "Votre demande — L'atelier des jours fleuris",
+    "intros": [
+      { "type": "Mariage", "message": "Nous préparons une proposition florale pour votre mariage et revenons vers vous sous 48 h." },
+      { "type": "Événement privé", "message": "Votre demande pour un événement privé est bien notée. Nous vous recontactons sous 48 h." },
+      { "type": "Événement professionnel", "message": "Votre demande professionnelle a été transmise. Nous revenons vers vous sous 48 h." },
+      { "type": "Abonnement floral", "message": "Merci ! Nous étudions votre besoin d'abonnement floral et vous répondons sous 48 h." },
+      { "type": "Atelier floral", "message": "Votre intérêt pour un atelier est enregistré. Nous vous envoyons les prochaines dates sous 48 h." },
+      { "type": "Autre", "message": "Votre message a bien été transmis. Nous vous répondons sous 48 h." }
+    ],
+    "recapTitle": "Récapitulatif de votre demande :",
+    "signature": "À très vite,\nL'atelier des jours fleuris\nhttps://www.atelierjf.fr"
+  },
+  "admin": {
+    "subject": "[{type}] Nouvelle demande — {nom}"
+  }
+}

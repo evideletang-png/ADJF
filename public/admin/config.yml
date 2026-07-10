@@ -66,6 +66,47 @@ collections:
             hint: 'Les montants proposés dans le menu « Budget indicatif » du formulaire. Ajoutez, retirez ou réordonnez librement. « Je ne sais pas encore » reste toujours proposé en premier.'
 
   # ------------------------------------------------------------------ #
+  - name: emails
+    label: E-mails automatiques
+    description: Les messages envoyés automatiquement après le formulaire de contact.
+    files:
+      - name: contact
+        label: Formulaire de contact
+        file: /public/api/emails.json
+        description: 'Personnalisez l''accusé de réception envoyé au client et la notification que vous recevez. Variables disponibles : {prenom}, {nom}, {type}, {date}, {lieu}, {budget} — elles sont remplacées automatiquement.'
+        fields:
+          - label: 'Accusé de réception (envoyé au client)'
+            name: client
+            widget: object
+            fields:
+              - { label: Objet de l'e-mail, name: subject, widget: string }
+              - label: 'Message d''accueil selon le type de projet'
+                name: intros
+                widget: list
+                label_singular: Message
+                summary: '{{fields.type}}'
+                hint: 'Le paragraphe d''introduction, choisi selon le type de projet coché dans le formulaire. Le message « Autre » sert de repli. Variables : {prenom}, {type}, {date}, {lieu}.'
+                fields:
+                  - label: Type de projet
+                    name: type
+                    widget: select
+                    options:
+                      - Mariage
+                      - Événement privé
+                      - Événement professionnel
+                      - Abonnement floral
+                      - Atelier floral
+                      - Autre
+                  - { label: Message, name: message, widget: text }
+              - { label: 'Titre du récapitulatif', name: recapTitle, widget: string, hint: 'La ligne juste au-dessus du rappel « Type / Lieu / Date ». Le récapitulatif lui-même est rempli automatiquement.' }
+              - { label: 'Signature (formule de fin)', name: signature, widget: text, hint: 'Plusieurs lignes possibles (nom de l''atelier, adresse du site…).' }
+          - label: 'Notification (l''e-mail que vous recevez)'
+            name: admin
+            widget: object
+            fields:
+              - { label: Objet de l'e-mail, name: subject, widget: string, hint: 'Le contenu (nom, coordonnées, message…) est ajouté automatiquement. Variables : {type}, {nom}.' }
+
+  # ------------------------------------------------------------------ #
   - name: articles
     label: Journal (articles)
     label_singular: Article

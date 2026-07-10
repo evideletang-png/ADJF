@@ -1,5 +1,4 @@
 ---
-import Email from './Email.astro';
 import { SITE } from '../consts';
 
 /*
@@ -18,7 +17,7 @@ const budgetOptions: string[] = (((SITE as any).budgetOptions ?? []) as any[])
   .filter(Boolean);
 ---
 
-<form class="contact-form" id="contact-form" novalidate>
+<form class="contact-form" id="contact-form" data-phone={SITE.phone ?? ''} novalidate>
   <div class="field-grid">
     <label class="field">
       <span>Nom<i>*</i></span>
@@ -93,6 +92,15 @@ const budgetOptions: string[] = (((SITE as any).budgetOptions ?? []) as any[])
     <label>Ne pas remplir<input type="text" name="entreprise" tabindex="-1" autocomplete="off" /></label>
   </div>
 
+  {/* Captcha accessible : la question est injectée en JS et la réponse est
+     vérifiée côté serveur (les bonnes réponses ne figurent jamais dans le HTML). */}
+  <label class="field captcha">
+    <span>Anti-robot<i>*</i> — <span id="cf-captcha-q" class="captcha-q">…</span></span>
+    <input type="text" name="answer" autocomplete="off" required />
+  </label>
+  <input type="hidden" name="challenge" value="" />
+  <input type="hidden" name="elapsed" value="" />
+
   <label class="consent">
     <input type="checkbox" name="consent" required />
     <span>J'accepte que mes informations soient utilisées pour être recontacté·e au sujet de ma demande.<i>*</i></span>
@@ -100,9 +108,7 @@ const budgetOptions: string[] = (((SITE as any).budgetOptions ?? []) as any[])
 
   <div class="form-foot">
     <button class="btn btn-primary" type="submit">Envoyer la demande</button>
-    <p class="form-hint">
-      Réponse sous 48&nbsp;h. Ou écrivez directement à <Email />.
-    </p>
+    <p class="form-hint">Réponse sous 48&nbsp;h, gratuite et sans engagement.</p>
   </div>
 
   <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
@@ -266,6 +272,11 @@ const budgetOptions: string[] = (((SITE as any).budgetOptions ?? []) as any[])
     font-size: 0.85rem;
     color: var(--muted);
   }
+  .captcha-q {
+    color: var(--ink);
+    font-weight: 700;
+    white-space: nowrap;
+  }
   .form-status {
     margin: 0;
     min-height: 1.2em;
@@ -334,6 +345,28 @@ const budgetOptions: string[] = (((SITE as any).budgetOptions ?? []) as any[])
     const theForm = form;
     const submitBtn = theForm.querySelector<HTMLButtonElement>('button[type="submit"]');
 
+    // Repère de temps pour le piège anti-robot (un envoi quasi instantané = bot).
+    const startTime = Date.now();
+
+    // Contact de repli en cas d'échec d'envoi (l'e-mail n'est plus exposé).
+    const phone = theForm.getAttribute('data-phone') || '';
+    const callHint = phone ? `appelez-nous au ${phone}` : 'contactez-nous par téléphone';
+
+    // Captcha accessible : la question est choisie ici, la réponse est vérifiée
+    // côté serveur. Les bonnes réponses vivent uniquement dans contact.php.
+    // ⚠️ Garder ces clés synchronisées avec $answers dans public/api/contact.php.
+    const CHALLENGES = [
+      { key: 'q1', q: 'Combien font deux plus trois ?' },
+      { key: 'q2', q: 'Combien font quatre plus un ?' },
+      { key: 'q3', q: 'Combien font trois plus quatre ?' },
+      { key: 'q4', q: 'Combien font six plus deux ?' },
+    ];
+    const challenge = CHALLENGES[Math.floor(Math.random() * CHALLENGES.length)];
+    const qEl = theForm.querySelector<HTMLElement>('#cf-captcha-q');
+    const challengeField = theForm.querySelector<HTMLInputElement>('[name="challenge"]');
+    if (qEl) qEl.textContent = challenge.q;
+    if (challengeField) challengeField.value = challenge.key;
+
     const showSuccess = (type: string, firstName: string) => {
       if (status) status.textContent = '';
       theForm.hidden = true;
@@ -347,6 +380,9 @@ const budgetOptions: string[] = (((SITE as any).budgetOptions ?? []) as any[])
 
     theForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      // Durée de remplissage (anti-robot) — renseignée avant la capture des champs.
+      const elapsedField = theForm.querySelector<HTMLInputElement>('[name="elapsed"]');
+      if (elapsedField) elapsedField.value = String(Date.now() - startTime);
       const data = new FormData(theForm);
 
       // Anti-spam : si le champ piège est rempli, faux succès (rien n'est envoyé).
@@ -378,6 +414,15 @@ const budgetOptions: string[] = (((SITE as any).budgetOptions ?? []) as any[])
         theForm.querySelector('[name="email"]')?.setAttribute('aria-invalid', 'true');
         return;
       }
+      const answer = (data.get('answer') as string)?.trim();
+      if (!answer) {
+        if (status) status.textContent = 'Merci de répondre à la question anti-robot.';
+        const el = theForm.querySelector<HTMLElement>('[name="answer"]');
+        el?.setAttribute('aria-invalid', 'true');
+        el?.focus();
+        return;
+      }
+      theForm.querySelector('[name="answer"]')?.removeAttribute('aria-invalid');
       if (!(theForm.querySelector('[name="consent"]') as HTMLInputElement)?.checked) {
         if (status) status.textContent = 'Merci de cocher la case de consentement.';
         return;
@@ -398,18 +443,22 @@ const budgetOptions: string[] = (((SITE as any).budgetOptions ?? []) as any[])
           // L'envoi n'est pas encore configuré : on reste honnête (pas de faux « envoyé »).
           if (status)
             status.textContent =
-              'Merci ! Le formulaire n’est pas encore tout à fait finalisé — écrivez-nous directement (adresse ci-dessous), on vous répond vite.';
+              `Merci ! L’envoi n’est pas encore tout à fait finalisé — en attendant, ${callHint}, on vous répond vite.`;
           if (submitBtn) submitBtn.disabled = false;
-        } else {
+        } else if (json && json.error === 'captcha') {
           if (status)
             status.textContent =
-              'Une erreur est survenue. Merci de réessayer, ou de nous écrire directement (adresse ci-dessous).';
+              'La réponse à la question anti-robot est incorrecte. Merci de réessayer.';
+          const el = theForm.querySelector<HTMLElement>('[name="answer"]');
+          el?.setAttribute('aria-invalid', 'true');
+          el?.focus();
+          if (submitBtn) submitBtn.disabled = false;
+        } else {
+          if (status) status.textContent = `Une erreur est survenue. Réessayez, ou ${callHint}.`;
           if (submitBtn) submitBtn.disabled = false;
         }
       } catch (_) {
-        if (status)
-          status.textContent =
-            'Envoi impossible pour le moment. Réessayez, ou écrivez-nous directement (adresse ci-dessous).';
+        if (status) status.textContent = `Envoi impossible pour le moment. Réessayez, ou ${callHint}.`;
         if (submitBtn) submitBtn.disabled = false;
       }
     });
