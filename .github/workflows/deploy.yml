@@ -54,6 +54,25 @@ jobs:
             > dist/api/mailer.secret.json
           echo "Config e-mail générée."
 
+      - name: Générer la config du relais OAuth (connexion CMS avec GitHub)
+        env:
+          GH_OAUTH_CLIENT_ID: ${{ secrets.GH_OAUTH_CLIENT_ID }}
+          GH_OAUTH_CLIENT_SECRET: ${{ secrets.GH_OAUTH_CLIENT_SECRET }}
+          GH_OAUTH_ALLOWED_DOMAINS: ${{ secrets.GH_OAUTH_ALLOWED_DOMAINS }}
+        run: |
+          if [ -z "$GH_OAUTH_CLIENT_ID" ] || [ -z "$GH_OAUTH_CLIENT_SECRET" ]; then
+            echo "Aucun secret OAuth configuré — la connexion CMS reste en mode jeton (PAT)."
+            exit 0
+          fi
+          mkdir -p dist/admin/oauth
+          jq -n \
+            --arg id "$GH_OAUTH_CLIENT_ID" \
+            --arg secret "$GH_OAUTH_CLIENT_SECRET" \
+            --arg domains "${GH_OAUTH_ALLOWED_DOMAINS:-www.atelierjf.fr,atelierjf.fr}" \
+            '{github_client_id: $id, github_client_secret: $secret, allowed_domains: $domains}' \
+            > dist/admin/oauth/oauth.secret.json
+          echo "Config OAuth générée."
+
       # Envoi via SFTP (port 22) avec repli en FTP simple (port 21).
       # OVH cluster129 refuse le FTPS explicite ; SFTP est la bonne méthode.
       # ⚠️ Le dossier cible est ./www/ (racine du site sur OVH). Si atelierjf.fr

@@ -1,0 +1,11 @@
+# Relais OAuth du CMS — URLs propres attendues par Sveltia.
+# Le CMS ouvre /admin/oauth/auth ; GitHub renvoie sur /admin/oauth/callback.
+RewriteEngine On
+RewriteBase /admin/oauth/
+RewriteRule ^auth/?$ auth.php [L,QSA]
+RewriteRule ^callback/?$ callback.php [L,QSA]
+
+# Ne jamais servir les identifiants OAuth en clair.
+<Files "oauth.secret.json">
+  Require all denied
+</Files>
