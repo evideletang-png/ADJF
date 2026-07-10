@@ -6,8 +6,9 @@ import ServiceCard from '../components/ServiceCard.astro';
 import ArticleCard from '../components/ArticleCard.astro';
 import Reviews from '../components/Reviews.astro';
 import Carousel from '../components/Carousel.astro';
-import { SITE } from '../consts';
+import { SITE, UI } from '../consts';
 import home from '../data/home.json';
+import realisationsPage from '../data/realisations.json';
 
 const prestations = (
   await getCollection('prestations', ({ data }) => !data.draft)
@@ -17,21 +18,27 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft))
   .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
   .slice(0, 3);
 
-// Réalisations — marque-places (vraies galeries en Phase 2/4).
-const realisations = [
-  { title: 'Mariage au domaine', tag: 'Mariage', variant: 'iris' },
-  { title: 'Cérémonie en château', tag: 'Mariage', variant: '' },
-  { title: 'Réception d’entreprise', tag: 'Professionnel', variant: 'sky' },
-  { title: 'Vitrine de saison', tag: 'Abonnement', variant: 'ochre' },
-  { title: 'Dîner privé', tag: 'Événement privé', variant: 'rose' },
-];
+// Réalisations récentes — depuis la collection (photos éditables au CMS).
+const catRank = (c: string) => {
+  const i = realisationsPage.categoryOrder.indexOf(c);
+  return i === -1 ? 999 : i;
+};
+const realisations = (
+  await getCollection('realisations', ({ data }) => !data.draft)
+)
+  .sort(
+    (a, b) =>
+      catRank(a.data.category) - catRank(b.data.category) ||
+      a.data.order - b.data.order
+  )
+  .slice(0, 6);
 
 const intro = home.intro;
 ---
 
 <BaseLayout
-  title="Fleuriste mariage, événementiel & abonnements floraux"
-  description={SITE.description}
+  title={home.seo.title}
+  description={home.seo.description || SITE.description}
 >
   <Hero slides={home.heroSlides} band={home.heroBand} />
 
@@ -55,12 +62,9 @@ const intro = home.intro;
   <section class="section" id="prestations">
     <div class="container">
       <div class="section-head">
-        <p class="eyebrow">Prestations</p>
-        <h2>Des fleurs pour les moments qui comptent</h2>
-        <p class="lead">
-          Du mariage à l’abonnement d’entreprise, chaque projet commence par une
-          conversation et se termine par des fleurs qui vous ressemblent.
-        </p>
+        <p class="eyebrow">{home.prestationsSection.eyebrow}</p>
+        <h2>{home.prestationsSection.title}</h2>
+        <p class="lead">{home.prestationsSection.copy}</p>
       </div>
       <div class="grid-auto">
         {
@@ -91,25 +95,38 @@ const intro = home.intro;
   <section class="section" id="realisations">
     <div class="container">
       <div class="section-head">
-        <p class="eyebrow">Réalisations</p>
-        <h2>Quelques jours fleuris</h2>
+        <p class="eyebrow">{home.realisationsSection.eyebrow}</p>
+        <h2>{home.realisationsSection.title}</h2>
       </div>
       <Carousel label="Réalisations récentes" itemWidth="min(84%, 340px)">
         {
           realisations.map((r) => (
             <a class="realisation" href="/realisations">
-              <div class="realisation-media placeholder" data-variant={r.variant}>
-                <span class="placeholder-label">Photo — {r.title}</span>
+              <div class="realisation-media">
+                {r.data.cover ? (
+                  <img
+                    src={r.data.cover}
+                    alt={r.data.coverAlt || r.data.title}
+                    width="340"
+                    height="453"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : (
+                  <div class="placeholder" data-variant={r.data.variant}>
+                    <span class="placeholder-label">Photo — {r.data.title}</span>
+                  </div>
+                )}
               </div>
               <div class="realisation-cap">
-                <span class="tag">{r.tag}</span>
-                <span>{r.title}</span>
+                <span class="tag">{r.data.category}</span>
+                <span>{r.data.title}</span>
               </div>
             </a>
           ))
         }
       </Carousel>
-      <p class="section-cta"><a class="btn-link" href="/realisations">Voir toutes les réalisations</a></p>
+      <p class="section-cta"><a class="btn-link" href="/realisations">{home.realisationsSection.linkLabel}</a></p>
     </div>
   </section>
 
@@ -124,8 +141,8 @@ const intro = home.intro;
   <section class="section" id="journal">
     <div class="container">
       <div class="section-head">
-        <p class="eyebrow">Journal</p>
-        <h2>Conseils, inspirations & réponses utiles</h2>
+        <p class="eyebrow">{home.journalSection.eyebrow}</p>
+        <h2>{home.journalSection.title}</h2>
       </div>
       <div class="grid-auto">
         {
@@ -144,7 +161,7 @@ const intro = home.intro;
           ))
         }
       </div>
-      <p class="section-cta"><a class="btn-link" href="/journal">Lire le journal</a></p>
+      <p class="section-cta"><a class="btn-link" href="/journal">{home.journalSection.linkLabel}</a></p>
     </div>
   </section>
 
@@ -157,7 +174,7 @@ const intro = home.intro;
           <h2>{home.cta.title}</h2>
           <p>{home.cta.copy}</p>
         </div>
-        <a class="btn btn-primary" href="/contact">Demander un devis</a>
+        <a class="btn btn-primary" href="/contact">{UI.ctaLabel}</a>
       </div>
     </div>
   </section>
@@ -205,11 +222,18 @@ const intro = home.intro;
   }
   .realisation-media {
     aspect-ratio: 3 / 4;
-    display: flex;
+    overflow: hidden;
     transition: transform 0.3s ease;
   }
   .realisation:hover .realisation-media {
     transform: translateY(-4px);
+  }
+  .realisation-media img,
+  .realisation-media .placeholder {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: flex;
   }
   .realisation-cap {
     display: flex;

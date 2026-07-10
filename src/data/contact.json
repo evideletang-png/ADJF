@@ -1,0 +1,34 @@
+{
+  "seo": {
+    "title": "Contact & devis",
+    "description": "Racontez-nous votre projet floral : mariage, événement, abonnement ou atelier. Réponse sous 48 h, devis gratuit et sans engagement."
+  },
+  "eyebrow": "Contact",
+  "title": "Parlons de votre projet",
+  "lead": "Quelques informations suffisent pour démarrer. Nous revenons vers vous sous 48 h avec une première proposition, sans engagement.",
+  "infoCard": {
+    "title": "En direct",
+    "phoneLabel": "Téléphone",
+    "zoneLabel": "Zone desservie",
+    "responseLabel": "Délai de réponse",
+    "responseValue": "Sous 48 h ouvrées"
+  },
+  "stepsCard": {
+    "title": "Comment ça se passe",
+    "steps": [
+      {
+        "strong": "Vous racontez.",
+        "copy": "Lieu, date, ambiance, budget indicatif."
+      },
+      {
+        "strong": "On propose.",
+        "copy": "Une sélection florale claire et de saison."
+      },
+      {
+        "strong": "On fleurit.",
+        "copy": "Création, installation, jour J."
+      }
+    ],
+    "note": "Chaque demande est automatiquement organisée par type de projet pour une réponse plus rapide et plus juste."
+  }
+}

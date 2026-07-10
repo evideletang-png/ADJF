@@ -1,8 +1,9 @@
 ---
-import { SITE, NAV, LEGAL_NAV } from '../consts';
+import { SITE, NAV, LEGAL_NAV, UI } from '../consts';
 import Sprig from './Sprig.astro';
 import Email from './Email.astro';
 const year = new Date().getFullYear();
+const F = UI.footer;
 ---
 
 <footer class="site-footer">
@@ -14,25 +15,25 @@ const year = new Date().getFullYear();
     </div>
 
     <nav class="footer-col" aria-label="Pages">
-      <h2>Explorer</h2>
+      <h2>{F.exploreTitle}</h2>
       <ul>
-        <li><a href="/">Accueil</a></li>
+        <li><a href="/">{F.homeLabel}</a></li>
         {NAV.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
       </ul>
     </nav>
 
     <div class="footer-col">
-      <h2>Contact</h2>
+      <h2>{F.contactTitle}</h2>
       <ul>
         {SITE.email && <li><Email /></li>}
         {SITE.phone && <li><a href={`tel:${SITE.phone.replace(/\s/g, '')}`}>{SITE.phone}</a></li>}
-        <li>Zone : {SITE.areaServed}</li>
-        <li><a href={SITE.instagram} target="_blank" rel="noreferrer me">Instagram</a></li>
+        <li>{F.zonePrefix} {SITE.areaServed}</li>
+        <li><a href={SITE.instagram} target="_blank" rel="noreferrer me">{F.instagramLabel}</a></li>
       </ul>
     </div>
 
     <nav class="footer-col" aria-label="Informations légales">
-      <h2>Légal</h2>
+      <h2>{F.legalTitle}</h2>
       <ul>
         {LEGAL_NAV.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
       </ul>
@@ -40,8 +41,8 @@ const year = new Date().getFullYear();
   </div>
 
   <div class="container footer-bottom">
-    <p>© {year} {SITE.name}. Tous droits réservés.</p>
-    <p>Fleurs de saison · créations sur mesure</p>
+    <p>© {year} {SITE.name}. {F.rightsNote}</p>
+    <p>{F.bottomTagline}</p>
   </div>
 </footer>
 

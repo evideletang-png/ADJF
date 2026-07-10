@@ -1,21 +1,21 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Sprig from '../components/Sprig.astro';
+import { UI } from '../consts';
+
+const NF = UI.notFound;
 ---
 
 <BaseLayout title="Page introuvable" description="Cette page n'existe pas ou plus." noindex={true}>
   <section class="section notfound">
     <div class="container narrow text-center">
       <Sprig size={78} animate />
-      <p class="eyebrow centered">Erreur 404</p>
-      <h1>Cette fleur a fané</h1>
-      <p class="lead">
-        La page que vous cherchez n’existe pas ou a été déplacée. Revenons vers des
-        jardins plus fleuris.
-      </p>
+      <p class="eyebrow centered">{NF.eyebrow}</p>
+      <h1>{NF.title}</h1>
+      <p class="lead">{NF.lead}</p>
       <div class="notfound-actions">
-        <a class="btn btn-primary" href="/">Retour à l’accueil</a>
-        <a class="btn btn-ghost" href="/prestations">Voir les prestations</a>
+        <a class="btn btn-primary" href="/">{NF.homeLabel}</a>
+        <a class="btn btn-ghost" href="/prestations">{NF.prestationsLabel}</a>
       </div>
     </div>
   </section>

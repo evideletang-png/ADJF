@@ -6,6 +6,12 @@ backend:
   name: github
   repo: evideletang-png/ADJF
   branch: main
+  # Connexion « Se connecter avec GitHub » (e-mail + mot de passe + 2FA), via le
+  # relais PHP hébergé sur OVH (public/admin/oauth). Décommentez la ligne
+  # ci-dessous UNIQUEMENT après avoir créé l'app OAuth GitHub et ajouté les
+  # secrets GH_OAUTH_CLIENT_ID / GH_OAUTH_CLIENT_SECRET (voir OAUTH-SETUP.md).
+  # Tant qu'elle est commentée, la connexion par jeton (PAT) reste active.
+  # base_url: https://www.atelierjf.fr/admin/oauth
 
 # Adresse publique du site (liens « Voir le site »)
 site_url: https://www.atelierjf.fr
@@ -23,6 +29,18 @@ _variant_options: &variant_options
   - { label: 'Lavande', value: 'iris' }
   - { label: 'Rosé', value: 'rose' }
   - { label: 'Doré', value: 'ochre' }
+
+# Bloc « Référencement (SEO) » réutilisable : le titre et la description qui
+# apparaissent dans Google et lors du partage sur les réseaux sociaux.
+_seo_field: &seo_field
+  label: 'Référencement (SEO)'
+  name: seo
+  widget: object
+  collapsed: true
+  hint: 'Titre et description affichés dans Google et lors du partage sur les réseaux. Idéalement : titre court, description de 1 à 2 phrases.'
+  fields:
+    - { label: 'Titre (onglet + Google)', name: title, widget: string }
+    - { label: 'Description', name: description, widget: text, required: false, hint: 'Laissez vide pour utiliser la description générale du site.' }
 
 # Bloc FAQ réutilisable (questions / réponses)
 _faq_field: &faq_field
@@ -64,6 +82,327 @@ collections:
             required: false
             label_singular: Fourchette
             hint: 'Les montants proposés dans le menu « Budget indicatif » du formulaire. Ajoutez, retirez ou réordonnez librement. « Je ne sais pas encore » reste toujours proposé en premier.'
+
+  # ------------------------------------------------------------------ #
+  - name: pages
+    label: Textes des pages
+    description: Accueil, À propos, Contact, en-têtes des pages listes et page Réalisations.
+    files:
+      # ---------------------------------------------------------------- #
+      - name: home
+        label: Page d'accueil
+        file: /src/data/home.json
+        fields:
+          - *seo_field
+          - label: Carrousel d'accueil (photos)
+            name: heroSlides
+            widget: list
+            label_singular: Photo
+            summary: '{{fields.alt}}'
+            hint: 'Vos plus belles réalisations, en plein écran. La 1ʳᵉ photo s''affiche en premier. Tant qu''une case est vide, un dégradé doux s''affiche à la place.'
+            fields:
+              - label: Photo
+                name: image
+                widget: image
+                required: false
+                hint: 'Format paysage conseillé, au moins 1600 px de large.'
+              - label: Description de la photo (accessibilité + SEO)
+                name: alt
+                widget: string
+                required: false
+                hint: 'Décrivez la photo en une phrase, ex. « Bouquet de mariée aux teintes pastel ».'
+              - label: Ambiance (si pas encore de photo)
+                name: variant
+                widget: select
+                default: ''
+                required: false
+                options: *variant_options
+          - label: Accroche (sous le carrousel)
+            name: heroBand
+            widget: object
+            fields:
+              - { label: Sur-titre, name: eyebrow, widget: string }
+              - label: Titre
+                name: title
+                widget: string
+                hint: 'Entourez un mot d''étoiles pour l''afficher en italique, ex. « Design floral *sur mesure* ».'
+              - { label: Texte, name: copy, widget: text }
+          - label: Trois points clés
+            name: intro
+            widget: list
+            label_singular: Point
+            summary: '{{fields.title}}'
+            fields:
+              - { label: Titre, name: title, widget: string }
+              - { label: Texte, name: copy, widget: text }
+          - label: 'En-tête de la section « Prestations »'
+            name: prestationsSection
+            widget: object
+            fields:
+              - { label: Sur-titre, name: eyebrow, widget: string }
+              - { label: Titre, name: title, widget: string }
+              - { label: Texte, name: copy, widget: text }
+          - { label: Citation, name: quote, widget: text }
+          - label: 'En-tête de la section « Réalisations »'
+            name: realisationsSection
+            widget: object
+            fields:
+              - { label: Sur-titre, name: eyebrow, widget: string }
+              - { label: Titre, name: title, widget: string }
+              - { label: 'Libellé du lien', name: linkLabel, widget: string, hint: 'Ex. « Voir toutes les réalisations ».' }
+          - label: 'En-tête de la section « Journal »'
+            name: journalSection
+            widget: object
+            fields:
+              - { label: Sur-titre, name: eyebrow, widget: string }
+              - { label: Titre, name: title, widget: string }
+              - { label: 'Libellé du lien', name: linkLabel, widget: string, hint: 'Ex. « Lire le journal ».' }
+          - label: Appel à l'action
+            name: cta
+            widget: object
+            fields:
+              - { label: Sur-titre, name: eyebrow, widget: string }
+              - { label: Titre, name: title, widget: string }
+              - { label: Texte, name: copy, widget: text }
+      # ---------------------------------------------------------------- #
+      - name: about
+        label: Page À propos
+        file: /src/data/about.json
+        fields:
+          - *seo_field
+          - { label: Sur-titre, name: eyebrow, widget: string }
+          - { label: Titre, name: title, widget: string }
+          - { label: Accroche, name: lede, widget: text }
+          - { label: Paragraphe, name: body, widget: text }
+          - { label: 'Bouton principal (libellé)', name: primaryCtaLabel, widget: string }
+          - { label: 'Bouton secondaire (libellé)', name: secondaryCtaLabel, widget: string }
+          - label: Portrait
+            name: portrait
+            widget: object
+            fields:
+              - { label: Photo, name: image, widget: image, required: false, hint: 'Format portrait conseillé. Tant que la case est vide, un dégradé doux s''affiche.' }
+              - { label: Description de la photo (accessibilité), name: alt, widget: string, required: false }
+          - { label: 'Sur-titre de la section démarche', name: demarcheEyebrow, widget: string }
+          - { label: Titre de la section démarche, name: demarcheTitle, widget: string }
+          - label: Étapes de la démarche
+            name: steps
+            widget: list
+            label_singular: Étape
+            summary: '{{fields.title}}'
+            fields:
+              - { label: Titre, name: title, widget: string }
+              - { label: Texte, name: copy, widget: text }
+          - label: 'Bandeau d''appel à l''action (bas de page)'
+            name: ctaBand
+            widget: object
+            fields:
+              - { label: Sur-titre, name: eyebrow, widget: string }
+              - { label: Titre, name: title, widget: string }
+      # ---------------------------------------------------------------- #
+      - name: contact
+        label: Page Contact
+        file: /src/data/contact.json
+        fields:
+          - *seo_field
+          - { label: Sur-titre, name: eyebrow, widget: string }
+          - { label: Titre, name: title, widget: string }
+          - { label: Accroche, name: lead, widget: text }
+          - label: 'Encart « En direct »'
+            name: infoCard
+            widget: object
+            fields:
+              - { label: Titre de l'encart, name: title, widget: string }
+              - { label: 'Libellé « Téléphone »', name: phoneLabel, widget: string }
+              - { label: 'Libellé « Zone desservie »', name: zoneLabel, widget: string }
+              - { label: 'Libellé « Délai de réponse »', name: responseLabel, widget: string }
+              - { label: 'Valeur du délai', name: responseValue, widget: string, hint: 'Ex. « Sous 48 h ouvrées ».' }
+          - label: 'Encart « Comment ça se passe »'
+            name: stepsCard
+            widget: object
+            fields:
+              - { label: Titre de l'encart, name: title, widget: string }
+              - label: Étapes
+                name: steps
+                widget: list
+                label_singular: Étape
+                summary: '{{fields.strong}}'
+                fields:
+                  - { label: 'Début (en gras)', name: strong, widget: string, hint: 'Ex. « Vous racontez. »' }
+                  - { label: Suite, name: copy, widget: string }
+              - { label: Note (bas de l'encart), name: note, widget: text, required: false }
+      # ---------------------------------------------------------------- #
+      - name: listes
+        label: En-têtes des pages listes
+        file: /src/data/pages.json
+        description: 'Les titres en haut des pages « Prestations » et « Journal ».'
+        fields:
+          - label: 'Page liste des prestations'
+            name: prestationsIndex
+            widget: object
+            fields:
+              - *seo_field
+              - { label: Sur-titre, name: eyebrow, widget: string }
+              - { label: Titre, name: title, widget: string }
+              - { label: Accroche, name: lead, widget: text }
+          - label: 'Page liste du journal'
+            name: journalIndex
+            widget: object
+            fields:
+              - *seo_field
+              - { label: Sur-titre, name: eyebrow, widget: string }
+              - { label: Titre, name: title, widget: string }
+              - { label: Accroche, name: lead, widget: text }
+              - { label: 'Libellé « Lire l''article »', name: readMoreLabel, widget: string }
+      # ---------------------------------------------------------------- #
+      - name: realisations-page
+        label: Page Réalisations (textes)
+        file: /src/data/realisations.json
+        description: 'Les textes de la page Réalisations. Les projets eux-mêmes se gèrent dans « Réalisations (projets) ».'
+        fields:
+          - *seo_field
+          - { label: Sur-titre, name: eyebrow, widget: string }
+          - { label: Titre, name: title, widget: string }
+          - { label: Accroche, name: lead, widget: text }
+          - label: 'Ordre des catégories'
+            name: categoryOrder
+            widget: list
+            label_singular: Catégorie
+            hint: 'L''ordre d''affichage des groupes de projets. Chaque valeur doit correspondre exactement à la catégorie choisie dans les fiches projets.'
+          - { label: 'Note (optionnelle, sous les galeries)', name: note, widget: text, required: false }
+          - label: 'Bandeau d''appel à l''action'
+            name: ctaBand
+            widget: object
+            fields:
+              - { label: Sur-titre, name: eyebrow, widget: string }
+              - { label: Titre, name: title, widget: string }
+              - { label: 'Libellé du bouton', name: buttonLabel, widget: string }
+
+  # ------------------------------------------------------------------ #
+  - name: realisations
+    label: Réalisations (projets)
+    label_singular: Réalisation
+    description: Un projet par fiche (photos), regroupés par catégorie sur la page.
+    folder: /src/content/realisations
+    create: true
+    extension: md
+    format: frontmatter
+    slug: '{{slug}}'
+    summary: '{{title}}'
+    sortable_fields: [order, title]
+    fields:
+      - { label: Titre, name: title, widget: string }
+      - label: Catégorie
+        name: category
+        widget: select
+        hint: 'Le groupe sous lequel ce projet apparaît. Pour ajouter une catégorie, pensez à l''ajouter aussi dans « Page Réalisations (textes) » → Ordre des catégories.'
+        options:
+          - Mariages
+          - Événements privés & professionnels
+          - Abonnements & boutiques
+      - { label: Ordre d'affichage, name: order, widget: number, default: 0, value_type: int }
+      - { label: Photo de couverture, name: cover, widget: image, required: false }
+      - { label: Description de la photo (accessibilité), name: coverAlt, widget: string, required: false }
+      - label: 'Galerie (photos supplémentaires)'
+        name: gallery
+        widget: list
+        required: false
+        label_singular: Photo
+        fields:
+          - { label: Photo, name: image, widget: image, required: false }
+          - { label: Description de la photo (accessibilité), name: alt, widget: string, required: false }
+      - label: Ambiance (si pas de photo)
+        name: variant
+        widget: select
+        default: ''
+        required: false
+        options: *variant_options
+      - { label: Brouillon (non publié), name: draft, widget: boolean, default: false }
+
+  # ------------------------------------------------------------------ #
+  - name: interface
+    label: Interface & libellés
+    description: Menu, pied de page, avis, page 404 et libellés du formulaire de contact.
+    files:
+      - name: ui
+        label: Menu, pied de page & formulaire
+        file: /src/data/ui.json
+        fields:
+          - label: 'Menu principal'
+            name: nav
+            widget: list
+            label_singular: Lien
+            summary: '{{fields.label}}'
+            hint: 'Les entrées du menu. Ne modifiez le champ « Lien (adresse) » que si vous savez ce que vous faites — il doit pointer vers une page existante.'
+            fields:
+              - { label: Libellé, name: label, widget: string }
+              - { label: 'Lien (adresse)', name: href, widget: string }
+          - label: 'Liens légaux (pied de page)'
+            name: legalNav
+            widget: list
+            label_singular: Lien
+            summary: '{{fields.label}}'
+            fields:
+              - { label: Libellé, name: label, widget: string }
+              - { label: 'Lien (adresse)', name: href, widget: string }
+          - { label: 'Bouton « Demander un devis » (partout)', name: ctaLabel, widget: string }
+          - { label: 'Bouton « Voir les prestations »', name: viewPrestationsLabel, widget: string }
+          - label: 'Pied de page'
+            name: footer
+            widget: object
+            fields:
+              - { label: 'Titre colonne « Explorer »', name: exploreTitle, widget: string }
+              - { label: 'Libellé « Accueil »', name: homeLabel, widget: string }
+              - { label: 'Titre colonne « Contact »', name: contactTitle, widget: string }
+              - { label: 'Préfixe « Zone : »', name: zonePrefix, widget: string }
+              - { label: 'Libellé « Instagram »', name: instagramLabel, widget: string }
+              - { label: 'Titre colonne « Légal »', name: legalTitle, widget: string }
+              - { label: 'Mention de droits', name: rightsNote, widget: string, hint: 'Ex. « Tous droits réservés. » (l''année et le nom sont ajoutés automatiquement).' }
+              - { label: 'Petite phrase du bas', name: bottomTagline, widget: string }
+          - label: 'Section « Avis clients »'
+            name: reviews
+            widget: object
+            fields:
+              - { label: Sur-titre, name: eyebrow, widget: string }
+              - { label: Titre, name: title, widget: string }
+          - { label: 'Sur-titre des pages légales', name: legalEyebrow, widget: string, hint: 'Ex. « Cadre légal ».' }
+          - label: 'Page introuvable (404)'
+            name: notFound
+            widget: object
+            fields:
+              - { label: Sur-titre, name: eyebrow, widget: string }
+              - { label: Titre, name: title, widget: string }
+              - { label: Texte, name: lead, widget: text }
+              - { label: 'Bouton retour accueil', name: homeLabel, widget: string }
+              - { label: 'Bouton prestations', name: prestationsLabel, widget: string }
+          - label: 'Formulaire de contact'
+            name: form
+            widget: object
+            fields:
+              - { label: 'Libellé « Nom »', name: nameLabel, widget: string }
+              - { label: 'Libellé « Email »', name: emailLabel, widget: string }
+              - { label: 'Libellé « Téléphone »', name: phoneLabel, widget: string }
+              - { label: 'Libellé « Type de projet »', name: projectTypeLabel, widget: string }
+              - { label: 'Libellé « Date souhaitée »', name: dateLabel, widget: string }
+              - { label: 'Libellé « Lieu ou ville »', name: locationLabel, widget: string }
+              - { label: 'Exemple dans le champ Lieu', name: locationPlaceholder, widget: string }
+              - { label: 'Libellé « Budget indicatif »', name: budgetLabel, widget: string }
+              - { label: 'Choix par défaut du budget', name: budgetDefault, widget: string, hint: 'Ex. « Je ne sais pas encore ».' }
+              - { label: 'Libellé « Votre projet »', name: messageLabel, widget: string }
+              - { label: 'Exemple dans le champ Message', name: messagePlaceholder, widget: string }
+              - { label: 'Libellé « Anti-robot »', name: captchaLabel, widget: string }
+              - { label: 'Texte de la case de consentement', name: consentLabel, widget: text }
+              - { label: 'Bouton d''envoi', name: submitLabel, widget: string }
+              - { label: 'Petite note sous le bouton', name: hint, widget: string }
+              - { label: 'Titre après envoi', name: successTitle, widget: string }
+              - label: 'Types de projet & message de confirmation'
+                name: projectTypes
+                widget: list
+                label_singular: Type
+                summary: '{{fields.value}}'
+                hint: 'Les choix du menu « Type de projet ». Chaque type a son message de confirmation, affiché au client après l''envoi. Gardez un type « Autre » : il sert de repli.'
+                fields:
+                  - { label: 'Type de projet', name: value, widget: string }
+                  - { label: 'Message de confirmation', name: successMessage, widget: text }
 
   # ------------------------------------------------------------------ #
   - name: emails
@@ -169,82 +508,6 @@ collections:
       - { label: Contenu détaillé, name: body, widget: markdown }
 
   # ------------------------------------------------------------------ #
-  - name: pages
-    label: Textes des pages
-    description: Les textes de l'accueil et de la page À propos.
-    files:
-      - name: home
-        label: Page d'accueil
-        file: /src/data/home.json
-        fields:
-          - label: Carrousel d'accueil (photos)
-            name: heroSlides
-            widget: list
-            label_singular: Photo
-            summary: '{{fields.alt}}'
-            hint: 'Vos plus belles réalisations, en plein écran. La 1ʳᵉ photo s''affiche en premier. Tant qu''une case est vide, un dégradé doux s''affiche à la place.'
-            fields:
-              - label: Photo
-                name: image
-                widget: image
-                required: false
-                hint: 'Format paysage conseillé, au moins 1600 px de large.'
-              - label: Description de la photo (accessibilité + SEO)
-                name: alt
-                widget: string
-                required: false
-                hint: 'Décrivez la photo en une phrase, ex. « Bouquet de mariée aux teintes pastel ».'
-              - label: Ambiance (si pas encore de photo)
-                name: variant
-                widget: select
-                default: ''
-                required: false
-                options: *variant_options
-          - label: Accroche (sous le carrousel)
-            name: heroBand
-            widget: object
-            fields:
-              - { label: Sur-titre, name: eyebrow, widget: string }
-              - label: Titre
-                name: title
-                widget: string
-                hint: 'Entourez un mot d''étoiles pour l''afficher en italique, ex. « Design floral *sur mesure* ».'
-              - { label: Texte, name: copy, widget: text }
-          - label: Trois points clés
-            name: intro
-            widget: list
-            label_singular: Point
-            summary: '{{fields.title}}'
-            fields:
-              - { label: Titre, name: title, widget: string }
-              - { label: Texte, name: copy, widget: text }
-          - { label: Citation, name: quote, widget: text }
-          - label: Appel à l'action
-            name: cta
-            widget: object
-            fields:
-              - { label: Sur-titre, name: eyebrow, widget: string }
-              - { label: Titre, name: title, widget: string }
-              - { label: Texte, name: copy, widget: text }
-      - name: about
-        label: Page À propos
-        file: /src/data/about.json
-        fields:
-          - { label: Sur-titre, name: eyebrow, widget: string }
-          - { label: Titre, name: title, widget: string }
-          - { label: Accroche, name: lede, widget: text }
-          - { label: Paragraphe, name: body, widget: text }
-          - { label: Titre de la section démarche, name: demarcheTitle, widget: string }
-          - label: Étapes de la démarche
-            name: steps
-            widget: list
-            label_singular: Étape
-            summary: '{{fields.title}}'
-            fields:
-              - { label: Titre, name: title, widget: string }
-              - { label: Texte, name: copy, widget: text }
-
-  # ------------------------------------------------------------------ #
   - name: legal
     label: Pages légales
     description: Mentions légales, CGV, confidentialité.
@@ -254,16 +517,19 @@ collections:
         file: /src/content/legal/mentions-legales.md
         fields:
           - { label: Titre, name: title, widget: string }
+          - { label: Description (SEO), name: description, widget: text, required: false }
           - { label: Contenu, name: body, widget: markdown }
       - name: cgv
         label: Conditions générales de vente
         file: /src/content/legal/cgv.md
         fields:
           - { label: Titre, name: title, widget: string }
+          - { label: Description (SEO), name: description, widget: text, required: false }
           - { label: Contenu, name: body, widget: markdown }
       - name: confidentialite
         label: Confidentialité
         file: /src/content/legal/confidentialite.md
         fields:
           - { label: Titre, name: title, widget: string }
+          - { label: Description (SEO), name: description, widget: text, required: false }
           - { label: Contenu, name: body, widget: markdown }

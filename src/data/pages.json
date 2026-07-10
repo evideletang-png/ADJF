@@ -1,0 +1,21 @@
+{
+  "prestationsIndex": {
+    "seo": {
+      "title": "Prestations florales",
+      "description": "Mariages, événements privés et professionnels, abonnements floraux et ateliers : découvrez toutes les prestations de L'atelier des jours fleuris."
+    },
+    "eyebrow": "Prestations",
+    "title": "Des fleurs pour chaque occasion",
+    "lead": "Chaque prestation est pensée sur mesure, au rythme des saisons. Choisissez l'univers qui vous correspond — nous composons le reste ensemble."
+  },
+  "journalIndex": {
+    "seo": {
+      "title": "Journal floral",
+      "description": "Conseils, inspirations et réponses aux questions fréquentes sur les fleurs de mariage, d'événement et d'entreprise."
+    },
+    "eyebrow": "Journal",
+    "title": "Conseils, inspirations & saisons",
+    "lead": "De quoi préparer votre projet floral sereinement, au fil des saisons et des questions que l'on nous pose le plus.",
+    "readMoreLabel": "Lire l'article"
+  }
+}

@@ -3,6 +3,9 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ServiceCard from '../../components/ServiceCard.astro';
 import { SITE } from '../../consts';
+import pages from '../../data/pages.json';
+
+const P = pages.prestationsIndex;
 
 const prestations = (
   await getCollection('prestations', ({ data }) => !data.draft)
@@ -24,19 +27,16 @@ const breadcrumb = {
 ---
 
 <BaseLayout
-  title="Prestations florales"
-  description="Mariages, événements privés et professionnels, abonnements floraux et ateliers : découvrez toutes les prestations de L'atelier des jours fleuris."
+  title={P.seo.title}
+  description={P.seo.description}
   jsonLd={[breadcrumb]}
 >
   <section class="section">
     <div class="container">
       <div class="section-head">
-        <p class="eyebrow">Prestations</p>
-        <h1>Des fleurs pour chaque occasion</h1>
-        <p class="lead">
-          Chaque prestation est pensée sur mesure, au rythme des saisons. Choisissez
-          l’univers qui vous correspond — nous composons le reste ensemble.
-        </p>
+        <p class="eyebrow">{P.eyebrow}</p>
+        <h1>{P.title}</h1>
+        <p class="lead">{P.lead}</p>
       </div>
       <div class="grid-auto">
         {

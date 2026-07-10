@@ -1,7 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { SITE } from '../../consts';
+import { SITE, UI } from '../../consts';
 
 export async function getStaticPaths() {
   const items = await getCollection('prestations', ({ data }) => !data.draft);
@@ -79,7 +79,7 @@ const jsonLd = [breadcrumb, serviceLd, ...(faqLd ? [faqLd] : [])];
             )
           }
           <div class="prestation-actions">
-            <a class="btn btn-primary" href="/contact">Demander un devis</a>
+            <a class="btn btn-primary" href="/contact">{UI.ctaLabel}</a>
             {priceFrom && <span class="price">{priceFrom}</span>}
           </div>
         </div>
@@ -104,7 +104,7 @@ const jsonLd = [breadcrumb, serviceLd, ...(faqLd ? [faqLd] : [])];
           <div class="aside-card">
             <h2>Envie d’en parler ?</h2>
             <p>Décrivez votre projet, nous revenons vers vous sous 48 h avec une proposition sur mesure.</p>
-            <a class="btn btn-primary" href="/contact">Demander un devis</a>
+            <a class="btn btn-primary" href="/contact">{UI.ctaLabel}</a>
             <a class="btn-link" href="/realisations">Voir des réalisations</a>
           </div>
         </aside>

@@ -46,13 +46,31 @@ const prestations = defineCollection({
   }),
 });
 
+// Réalisations — un projet par fiche, regroupés par catégorie sur la page.
+const realisations = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/realisations' }),
+  schema: z.object({
+    title: z.string(),
+    category: z.string(),
+    order: z.number().default(0),
+    cover: z.string().optional(),
+    coverAlt: z.string().optional(),
+    gallery: z
+      .array(z.object({ image: z.string().optional(), alt: z.string().optional() }))
+      .default([]),
+    variant,
+    draft: z.boolean().default(false),
+  }),
+});
+
 // Pages légales — éditables au CMS.
 const legal = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/legal' }),
   schema: z.object({
     title: z.string(),
+    description: z.string().optional(),
     updatedDate: z.coerce.date().optional(),
   }),
 });
 
-export const collections = { blog, prestations, legal };
+export const collections = { blog, prestations, realisations, legal };

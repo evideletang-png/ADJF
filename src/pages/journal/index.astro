@@ -3,6 +3,9 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArticleCard from '../../components/ArticleCard.astro';
 import { SITE } from '../../consts';
+import pages from '../../data/pages.json';
+
+const J = pages.journalIndex;
 
 const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
@@ -32,19 +35,16 @@ const breadcrumb = {
 ---
 
 <BaseLayout
-  title="Journal floral"
-  description="Conseils, inspirations et réponses aux questions fréquentes sur les fleurs de mariage, d'événement et d'entreprise."
+  title={J.seo.title}
+  description={J.seo.description}
   jsonLd={[breadcrumb]}
 >
   <section class="section">
     <div class="container">
       <div class="section-head">
-        <p class="eyebrow">Journal</p>
-        <h1>Conseils, inspirations & saisons</h1>
-        <p class="lead">
-          De quoi préparer votre projet floral sereinement, au fil des saisons et
-          des questions que l’on nous pose le plus.
-        </p>
+        <p class="eyebrow">{J.eyebrow}</p>
+        <h1>{J.title}</h1>
+        <p class="lead">{J.lead}</p>
       </div>
 
       {
@@ -67,7 +67,7 @@ const breadcrumb = {
               </div>
               <h2>{featured.data.title}</h2>
               <p>{featured.data.description}</p>
-              <span class="btn-link">Lire l’article</span>
+              <span class="btn-link">{J.readMoreLabel}</span>
             </div>
           </a>
         )

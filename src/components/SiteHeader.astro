@@ -1,5 +1,5 @@
 ---
-import { SITE, NAV } from '../consts';
+import { SITE, NAV, UI } from '../consts';
 
 const path = Astro.url.pathname;
 const isActive = (href: string) =>
@@ -38,7 +38,7 @@ const isActive = (href: string) =>
           ))
         }
       </ul>
-      <a class="btn btn-primary nav-cta" href="/contact">Demander un devis</a>
+      <a class="btn btn-primary nav-cta" href="/contact">{UI.ctaLabel}</a>
     </nav>
   </div>
 </header>

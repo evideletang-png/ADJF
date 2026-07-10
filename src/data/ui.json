@@ -1,0 +1,82 @@
+{
+  "nav": [
+    { "label": "Prestations", "href": "/prestations" },
+    { "label": "Réalisations", "href": "/realisations" },
+    { "label": "Journal", "href": "/journal" },
+    { "label": "À propos", "href": "/a-propos" },
+    { "label": "Contact", "href": "/contact" }
+  ],
+  "legalNav": [
+    { "label": "Mentions légales", "href": "/mentions-legales" },
+    { "label": "CGV", "href": "/cgv" },
+    { "label": "Confidentialité", "href": "/confidentialite" }
+  ],
+  "ctaLabel": "Demander un devis",
+  "viewPrestationsLabel": "Voir les prestations",
+  "footer": {
+    "exploreTitle": "Explorer",
+    "homeLabel": "Accueil",
+    "contactTitle": "Contact",
+    "zonePrefix": "Zone :",
+    "instagramLabel": "Instagram",
+    "legalTitle": "Légal",
+    "rightsNote": "Tous droits réservés.",
+    "bottomTagline": "Fleurs de saison · créations sur mesure"
+  },
+  "reviews": {
+    "eyebrow": "Avis clients",
+    "title": "Ce qu'elles et ils en disent"
+  },
+  "legalEyebrow": "Cadre légal",
+  "notFound": {
+    "eyebrow": "Erreur 404",
+    "title": "Cette fleur a fané",
+    "lead": "La page que vous cherchez n'existe pas ou a été déplacée. Revenons vers des jardins plus fleuris.",
+    "homeLabel": "Retour à l'accueil",
+    "prestationsLabel": "Voir les prestations"
+  },
+  "form": {
+    "nameLabel": "Nom",
+    "emailLabel": "Email",
+    "phoneLabel": "Téléphone",
+    "projectTypeLabel": "Type de projet",
+    "dateLabel": "Date souhaitée",
+    "locationLabel": "Lieu ou ville",
+    "locationPlaceholder": "Domaine, salle, ville…",
+    "budgetLabel": "Budget indicatif",
+    "budgetDefault": "Je ne sais pas encore",
+    "messageLabel": "Votre projet",
+    "messagePlaceholder": "Ambiance, couleurs, nombre d'invités, inspirations…",
+    "captchaLabel": "Anti-robot",
+    "consentLabel": "J'accepte que mes informations soient utilisées pour être recontacté·e au sujet de ma demande.",
+    "submitLabel": "Envoyer la demande",
+    "hint": "Réponse sous 48 h, gratuite et sans engagement.",
+    "successTitle": "Demande envoyée",
+    "projectTypes": [
+      {
+        "value": "Mariage",
+        "successMessage": "Nous préparons une proposition florale pour votre mariage et revenons vers vous sous 48 h avec les prochaines étapes."
+      },
+      {
+        "value": "Événement privé",
+        "successMessage": "Votre demande pour un événement privé est bien notée. Léana vous recontacte sous 48 h."
+      },
+      {
+        "value": "Événement professionnel",
+        "successMessage": "Votre demande professionnelle a été transmise. Nous revenons vers vous sous 48 h avec une première proposition."
+      },
+      {
+        "value": "Abonnement floral",
+        "successMessage": "Merci ! Nous étudions votre besoin d'abonnement floral et vous répondons sous 48 h."
+      },
+      {
+        "value": "Atelier floral",
+        "successMessage": "Votre intérêt pour un atelier est enregistré. Nous vous envoyons les prochaines dates sous 48 h."
+      },
+      {
+        "value": "Autre",
+        "successMessage": "Votre message a bien été transmis. Léana vous répond sous 48 h."
+      }
+    ]
+  }
+}

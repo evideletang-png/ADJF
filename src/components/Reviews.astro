@@ -1,6 +1,6 @@
 ---
 import Carousel from './Carousel.astro';
-import { SITE } from '../consts';
+import { SITE, UI } from '../consts';
 import { getReviews } from '../lib/googleReviews';
 
 const data = await getReviews();
@@ -31,8 +31,8 @@ const aggregateLd = connected
 <div class="reviews">
   <div class="reviews-head">
     <div>
-      <p class="eyebrow">Avis clients</p>
-      <h2>Ce qu'elles et ils en disent</h2>
+      <p class="eyebrow">{UI.reviews.eyebrow}</p>
+      <h2>{UI.reviews.title}</h2>
     </div>
     <div class="reviews-score">
       <span class="score-num">{average}</span>

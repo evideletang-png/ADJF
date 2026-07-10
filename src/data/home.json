@@ -1,4 +1,8 @@
 {
+  "seo": {
+    "title": "Fleuriste mariage, événementiel & abonnements floraux",
+    "description": ""
+  },
   "heroSlides": [
     {
       "image": "",
@@ -35,7 +39,22 @@
       "copy": "Un calendrier précis, de la première idée au jour J, pour avancer l'esprit tranquille."
     }
   ],
+  "prestationsSection": {
+    "eyebrow": "Prestations",
+    "title": "Des fleurs pour les moments qui comptent",
+    "copy": "Du mariage à l'abonnement d'entreprise, chaque projet commence par une conversation et se termine par des fleurs qui vous ressemblent."
+  },
   "quote": "Chaque projet commence par une conversation : le lieu, la saison, les couleurs, l'émotion — puis une proposition florale claire.",
+  "realisationsSection": {
+    "eyebrow": "Réalisations",
+    "title": "Quelques jours fleuris",
+    "linkLabel": "Voir toutes les réalisations"
+  },
+  "journalSection": {
+    "eyebrow": "Journal",
+    "title": "Conseils, inspirations & réponses utiles",
+    "linkLabel": "Lire le journal"
+  },
   "cta": {
     "eyebrow": "Votre projet",
     "title": "Parlons de vos fleurs",

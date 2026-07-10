@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ContactForm from '../components/ContactForm.astro';
 import { SITE } from '../consts';
+import contact from '../data/contact.json';
 
 const breadcrumb = {
   '@context': 'https://schema.org',
@@ -19,58 +20,58 @@ const breadcrumb = {
 ---
 
 <BaseLayout
-  title="Contact & devis"
-  description="Racontez-nous votre projet floral : mariage, événement, abonnement ou atelier. Réponse sous 48 h, devis gratuit et sans engagement."
+  title={contact.seo.title}
+  description={contact.seo.description}
   jsonLd={[breadcrumb]}
 >
   <section class="section">
     <div class="container contact-grid">
       <div class="contact-main">
         <div class="section-head">
-          <p class="eyebrow">Contact</p>
-          <h1>Parlons de votre projet</h1>
-          <p class="lead">
-            Quelques informations suffisent pour démarrer. Nous revenons vers vous
-            sous 48 h avec une première proposition, sans engagement.
-          </p>
+          <p class="eyebrow">{contact.eyebrow}</p>
+          <h1>{contact.title}</h1>
+          <p class="lead">{contact.lead}</p>
         </div>
         <ContactForm />
       </div>
 
       <aside class="contact-aside">
         <div class="info-card">
-          <h2>En direct</h2>
+          <h2>{contact.infoCard.title}</h2>
           <ul>
             {
               SITE.phone && (
                 <li>
-                  <span class="label">Téléphone</span>
+                  <span class="label">{contact.infoCard.phoneLabel}</span>
                   <a href={`tel:${SITE.phone.replace(/\s/g, '')}`}>{SITE.phone}</a>
                 </li>
               )
             }
             <li>
-              <span class="label">Zone desservie</span>
+              <span class="label">{contact.infoCard.zoneLabel}</span>
               <span>{SITE.areaServed}</span>
             </li>
             <li>
-              <span class="label">Délai de réponse</span>
-              <span>Sous 48 h ouvrées</span>
+              <span class="label">{contact.infoCard.responseLabel}</span>
+              <span>{contact.infoCard.responseValue}</span>
             </li>
           </ul>
         </div>
 
         <div class="steps-card">
-          <h2>Comment ça se passe</h2>
+          <h2>{contact.stepsCard.title}</h2>
           <ol>
-            <li><strong>Vous racontez.</strong> Lieu, date, ambiance, budget indicatif.</li>
-            <li><strong>On propose.</strong> Une sélection florale claire et de saison.</li>
-            <li><strong>On fleurit.</strong> Création, installation, jour J.</li>
+            {
+              contact.stepsCard.steps.map((s) => (
+                <li><strong>{s.strong}</strong> {s.copy}</li>
+              ))
+            }
           </ol>
-          <p class="smart-note">
-            Chaque demande est automatiquement organisée par type de projet pour une
-            réponse plus rapide et plus juste.
-          </p>
+          {
+            contact.stepsCard.note && (
+              <p class="smart-note">{contact.stepsCard.note}</p>
+            )
+          }
         </div>
       </aside>
     </div>

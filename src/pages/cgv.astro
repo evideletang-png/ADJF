@@ -1,6 +1,7 @@
 ---
 import { getEntry, render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { UI } from '../consts';
 
 const entry = await getEntry('legal', 'cgv');
 if (!entry) throw new Error('Contenu légal manquant : cgv');
@@ -9,12 +10,12 @@ const { Content } = await render(entry);
 
 <BaseLayout
   title={entry.data.title}
-  description="Conditions générales de vente de L'atelier des jours fleuris."
+  description={entry.data.description}
   noindex={true}
 >
   <section class="section">
     <div class="container narrow">
-      <p class="eyebrow">Cadre légal</p>
+      <p class="eyebrow">{UI.legalEyebrow}</p>
       <h1>{entry.data.title}</h1>
       <div class="prose">
         <Content />

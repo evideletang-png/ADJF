@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Reviews from '../components/Reviews.astro';
-import { SITE } from '../consts';
+import { SITE, UI } from '../consts';
 import about from '../data/about.json';
 
 const steps = about.steps;
@@ -22,8 +22,8 @@ const breadcrumb = {
 ---
 
 <BaseLayout
-  title="À propos"
-  description="L'atelier des jours fleuris, c'est Léana : une fleuriste événementielle attachée aux fleurs de saison, au sur-mesure et au soin du détail."
+  title={about.seo.title}
+  description={about.seo.description}
   jsonLd={[breadcrumb]}
 >
   <section class="section about-hero">
@@ -34,20 +34,36 @@ const breadcrumb = {
         <p class="lead">{about.lede}</p>
         <p>{about.body}</p>
         <div class="about-actions">
-          <a class="btn btn-primary" href="/contact">Travailler ensemble</a>
-          <a class="btn-link" href="/prestations">Voir les prestations</a>
+          <a class="btn btn-primary" href="/contact">{about.primaryCtaLabel}</a>
+          <a class="btn-link" href="/prestations">{about.secondaryCtaLabel}</a>
         </div>
       </div>
-      <div class="about-portrait placeholder" data-variant="iris">
-        <span class="placeholder-label">Portrait — Léana</span>
-      </div>
+      {
+        about.portrait.image ? (
+          <img
+            class="about-portrait"
+            src={about.portrait.image}
+            alt={about.portrait.alt}
+            width="420"
+            height="525"
+            loading="lazy"
+            decoding="async"
+          />
+        ) : (
+          <div class="about-portrait placeholder" data-variant="iris">
+            <span class="placeholder-label">
+              {about.portrait.alt ? `Photo — ${about.portrait.alt}` : 'Portrait — Léana'}
+            </span>
+          </div>
+        )
+      }
     </div>
   </section>
 
   <section class="section demarche">
     <div class="container">
       <div class="section-head">
-        <p class="eyebrow">La démarche</p>
+        <p class="eyebrow">{about.demarcheEyebrow}</p>
         <h2>{about.demarcheTitle}</h2>
       </div>
       <div class="grid-auto">
@@ -73,10 +89,10 @@ const breadcrumb = {
     <div class="container">
       <div class="cta-band">
         <div>
-          <p class="eyebrow">Votre projet</p>
-          <h2>Racontez-nous votre événement</h2>
+          <p class="eyebrow">{about.ctaBand.eyebrow}</p>
+          <h2>{about.ctaBand.title}</h2>
         </div>
-        <a class="btn btn-primary" href="/contact">Demander un devis</a>
+        <a class="btn btn-primary" href="/contact">{UI.ctaLabel}</a>
       </div>
     </div>
   </section>
@@ -98,6 +114,11 @@ const breadcrumb = {
   .about-portrait {
     aspect-ratio: 4 / 5;
     display: flex;
+    width: 100%;
+  }
+  img.about-portrait {
+    object-fit: cover;
+    border-radius: var(--radius);
   }
   .step {
     padding: 26px;

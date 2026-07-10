@@ -1,5 +1,5 @@
 ---
-import { SITE } from '../consts';
+import { SITE, UI } from '../consts';
 
 /*
  * Formulaire de contact — MAQUETTE fonctionnelle (Phase 1).
@@ -8,6 +8,15 @@ import { SITE } from '../consts';
  * En Phase 3 : envoi vers une fonction serverless -> API Gmail
  * (classement, libellé, accusé de réception, brouillon de réponse).
  */
+
+// Libellés du formulaire éditables au CMS (src/data/ui.json -> form).
+const F = UI.form;
+
+// Types de projet + message de confirmation associé (éditables au CMS).
+const projectTypes = F.projectTypes;
+const successByType: Record<string, string> = Object.fromEntries(
+  projectTypes.map((t) => [t.value, t.successMessage])
+);
 
 // Fourchettes de budget éditables au CMS (src/data/site.json -> budgetOptions).
 // On tolère aussi bien des chaînes simples que des objets {label}/{value}.
@@ -20,45 +29,40 @@ const budgetOptions: string[] = (((SITE as any).budgetOptions ?? []) as any[])
 <form class="contact-form" id="contact-form" data-phone={SITE.phone ?? ''} novalidate>
   <div class="field-grid">
     <label class="field">
-      <span>Nom<i>*</i></span>
+      <span>{F.nameLabel}<i>*</i></span>
       <input type="text" name="name" autocomplete="name" required />
     </label>
     <label class="field">
-      <span>Email<i>*</i></span>
+      <span>{F.emailLabel}<i>*</i></span>
       <input type="email" name="email" autocomplete="email" required />
     </label>
   </div>
 
   <div class="field-grid">
     <label class="field">
-      <span>Téléphone</span>
+      <span>{F.phoneLabel}</span>
       <input type="tel" name="phone" autocomplete="tel" />
     </label>
     <label class="field">
-      <span>Type de projet</span>
+      <span>{F.projectTypeLabel}</span>
       <select name="projectType">
-        <option value="Mariage">Mariage</option>
-        <option value="Événement privé">Événement privé</option>
-        <option value="Événement professionnel">Événement professionnel</option>
-        <option value="Abonnement floral">Abonnement floral</option>
-        <option value="Atelier floral">Atelier floral</option>
-        <option value="Autre">Autre</option>
+        {projectTypes.map((t) => <option value={t.value}>{t.value}</option>)}
       </select>
     </label>
   </div>
 
   <div class="field-grid">
     <label class="field">
-      <span>Date souhaitée</span>
+      <span>{F.dateLabel}</span>
       <input type="date" name="eventDate" />
     </label>
     <div class="field">
-      <span id="cf-location-label">Lieu ou ville</span>
+      <span id="cf-location-label">{F.locationLabel}</span>
       <div class="ac" data-ac>
         <input
           type="text"
           name="location"
-          placeholder="Domaine, salle, ville…"
+          placeholder={F.locationPlaceholder}
           autocomplete="off"
           autocorrect="off"
           autocapitalize="off"
@@ -75,16 +79,16 @@ const budgetOptions: string[] = (((SITE as any).budgetOptions ?? []) as any[])
   </div>
 
   <label class="field">
-    <span>Budget indicatif</span>
+    <span>{F.budgetLabel}</span>
     <select name="budget">
-      <option value="">Je ne sais pas encore</option>
+      <option value="">{F.budgetDefault}</option>
       {budgetOptions.map((o) => <option value={o}>{o}</option>)}
     </select>
   </label>
 
   <label class="field">
-    <span>Votre projet<i>*</i></span>
-    <textarea name="message" rows="5" required placeholder="Ambiance, couleurs, nombre d'invités, inspirations…"></textarea>
+    <span>{F.messageLabel}<i>*</i></span>
+    <textarea name="message" rows="5" required placeholder={F.messagePlaceholder}></textarea>
   </label>
 
   {/* Anti-spam : champ piège, invisible pour les humains */}
@@ -95,7 +99,7 @@ const budgetOptions: string[] = (((SITE as any).budgetOptions ?? []) as any[])
   {/* Captcha accessible : la question est injectée en JS et la réponse est
      vérifiée côté serveur (les bonnes réponses ne figurent jamais dans le HTML). */}
   <label class="field captcha">
-    <span>Anti-robot<i>*</i> — <span id="cf-captcha-q" class="captcha-q">…</span></span>
+    <span>{F.captchaLabel}<i>*</i> — <span id="cf-captcha-q" class="captcha-q">…</span></span>
     <input type="text" name="answer" autocomplete="off" required />
   </label>
   <input type="hidden" name="challenge" value="" />
@@ -103,20 +107,23 @@ const budgetOptions: string[] = (((SITE as any).budgetOptions ?? []) as any[])
 
   <label class="consent">
     <input type="checkbox" name="consent" required />
-    <span>J'accepte que mes informations soient utilisées pour être recontacté·e au sujet de ma demande.<i>*</i></span>
+    <span>{F.consentLabel}<i>*</i></span>
   </label>
 
   <div class="form-foot">
-    <button class="btn btn-primary" type="submit">Envoyer la demande</button>
-    <p class="form-hint">Réponse sous 48&nbsp;h, gratuite et sans engagement.</p>
+    <button class="btn btn-primary" type="submit">{F.submitLabel}</button>
+    <p class="form-hint">{F.hint}</p>
   </div>
 
   <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
 </form>
 
+{/* Messages de confirmation par type de projet — lus par le script client. */}
+<script type="application/json" id="cf-success" set:html={JSON.stringify(successByType)} is:inline></script>
+
 <div class="form-success card" id="form-success" hidden>
   <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5" /></svg>
-  <h3 id="success-title">Demande envoyée</h3>
+  <h3 id="success-title">{F.successTitle}</h3>
   <p id="success-message"></p>
 </div>
 
@@ -326,7 +333,7 @@ const budgetOptions: string[] = (((SITE as any).budgetOptions ?? []) as any[])
 
   // Confirmation adaptée au type de projet — aperçu du tri « intelligent »
   // que la fonction Gmail réalisera côté serveur en Phase 3.
-  const byType: Record<string, string> = {
+  let byType: Record<string, string> = {
     Mariage:
       'Nous préparons une proposition florale pour votre mariage et revenons vers vous sous 48 h avec les prochaines étapes.',
     'Événement privé':
@@ -340,6 +347,17 @@ const budgetOptions: string[] = (((SITE as any).budgetOptions ?? []) as any[])
     Autre:
       'Votre message a bien été transmis. Léana vous répond sous 48 h.',
   };
+
+  // Surcharge par les messages éditables au CMS (injectés via #cf-success) —
+  // les valeurs ci-dessus ne servent plus que de repli si l'injection échoue.
+  try {
+    const injected = JSON.parse(
+      document.getElementById('cf-success')?.textContent || '{}'
+    );
+    if (injected && typeof injected === 'object' && Object.keys(injected).length) {
+      byType = injected;
+    }
+  } catch (_) {}
 
   if (form) {
     const theForm = form;
@@ -371,7 +389,7 @@ const budgetOptions: string[] = (((SITE as any).budgetOptions ?? []) as any[])
       if (status) status.textContent = '';
       theForm.hidden = true;
       if (success && successMsg) {
-        successMsg.textContent = `${firstName ? firstName + ', m' : 'M'}erci. ${byType[type] ?? byType['Autre']}`;
+        successMsg.textContent = `${firstName ? firstName + ', m' : 'M'}erci. ${byType[type] ?? byType['Autre'] ?? Object.values(byType)[0] ?? ''}`;
         success.classList.add('show');
         success.removeAttribute('hidden');
         success.scrollIntoView({ behavior: 'smooth', block: 'center' });

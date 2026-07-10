@@ -1,7 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { SITE } from '../../consts';
+import { SITE, UI } from '../../consts';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog', ({ data }) => !data.draft);
@@ -136,7 +136,7 @@ const jsonLd = [articleLd, breadcrumb, ...(faqLd ? [faqLd] : [])];
 
       <div class="post-foot">
         <a class="btn-link" href="/journal">Retour au journal</a>
-        <a class="btn btn-primary" href="/contact">Demander un devis</a>
+        <a class="btn btn-primary" href="/contact">{UI.ctaLabel}</a>
       </div>
     </div>
   </article>

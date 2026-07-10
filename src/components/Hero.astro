@@ -18,6 +18,8 @@ interface Props {
   band?: Band;
 }
 
+import { UI } from '../consts';
+
 const defaultSlides: Slide[] = [
   { image: '', alt: 'Composition florale de saison', variant: 'iris' },
 ];
@@ -92,8 +94,8 @@ function emphasize(str: string): string {
     <h1 class="hero-band-title" set:html={emphasize(band.title)} />
     <p class="hero-band-copy">{band.copy}</p>
     <div class="hero-actions">
-      <a class="btn btn-primary" href="/contact">Demander un devis</a>
-      <a class="btn btn-ghost" href="/prestations">Voir les prestations</a>
+      <a class="btn btn-primary" href="/contact">{UI.ctaLabel}</a>
+      <a class="btn btn-ghost" href="/prestations">{UI.viewPrestationsLabel}</a>
     </div>
   </div>
 </section>
