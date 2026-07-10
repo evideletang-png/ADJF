@@ -1,5 +1,6 @@
 ---
 title: Politique de confidentialité
+description: Politique de confidentialité et gestion des données personnelles de L'atelier des jours fleuris.
 ---
 
 > ⚠︎ À adapter selon vos usages réels avant la mise en ligne, puis supprimer cet avertissement.
@@ -18,4 +19,4 @@ Les demandes sont conservées le temps nécessaire au suivi commercial, puis sup
 
 ## Vos droits
 
-Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Pour l'exercer, écrivez à contact [arobase] atelierjf.fr.
+Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Pour l'exercer, écrivez à contact (arobase) atelierjf.fr.

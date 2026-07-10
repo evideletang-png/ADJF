@@ -1,5 +1,6 @@
 ---
 title: Mentions légales
+description: Mentions légales de L'atelier des jours fleuris.
 ---
 
 > ⚠︎ À compléter avec les informations réelles de l'entreprise avant la mise en ligne définitive, puis supprimer cet avertissement.
@@ -7,10 +8,10 @@ title: Mentions légales
 ## Éditeur du site
 
 L'atelier des jours fleuris
-[Statut juridique — ex. micro-entreprise]
-[Adresse]
-SIRET : [numéro]
-Email : contact [arobase] atelierjf.fr
+Statut juridique : à compléter (ex. micro-entreprise)
+Adresse : à compléter
+SIRET : à compléter
+Email : contact (arobase) atelierjf.fr
 
 ## Responsable de la publication
 
@@ -26,4 +27,4 @@ L'ensemble des contenus (textes, photographies, créations florales) présents s
 
 ## Contact
 
-Pour toute question : contact [arobase] atelierjf.fr.
+Pour toute question : contact (arobase) atelierjf.fr.

@@ -1,5 +1,6 @@
 ---
 title: Conditions générales de vente
+description: Conditions générales de vente de L'atelier des jours fleuris.
 ---
 
 **CONDITIONS GÉNÉRALES DE VENTE**
@@ -71,7 +72,7 @@ En vigueur à compter du 01.01.2026
 
 **6.2 — Ventes au comptant (clients particuliers)**
 
-**Sauf accord particulier, les ventes à l’atelier sont payables comptant au moment du retrait ou de la livraison. Pour les commandes sur mesure et prestations événementielles, un acompte de [30 %] du montant total TTC est exigé à la commande, le solde étant payable au plus tard une semaine avant la livraison. Lorsque le contrat est signé hors de l’atelier, l’encaissement de l’acompte est toutefois différé dans les conditions de l’article 9.3.**
+**Sauf accord particulier, les ventes à l’atelier sont payables comptant au moment du retrait ou de la livraison. Pour les commandes sur mesure et prestations événementielles, un acompte de 30 % du montant total TTC est exigé à la commande, le solde étant payable au plus tard une semaine avant la livraison. Lorsque le contrat est signé hors de l’atelier, l’encaissement de l’acompte est toutefois différé dans les conditions de l’article 9.3.**
 
 **6.3 — Ventes entre professionnels (B2B)**
 
@@ -140,7 +141,7 @@ L’activité du Vendeur portant exclusivement sur des produits périssables et 
 
 **Le Client bénéficie des garanties légales de conformité (articles L217-3 et suivants du Code de la consommation) et des vices cachés (articles 1641 et suivants du Code civil) dans les conditions et limites prévues par la loi, compte tenu de la nature périssable des produits.**
 
-**En raison de cette nature, toute réclamation relative à un défaut apparent (produit abîmé, non conforme) doit être formulée au plus tard dans les [24 heures] suivant la remise ou la livraison, accompagnée si possible de photographies. Aucune réclamation ne pourra être prise en compte si les conseils d’entretien remis avec les produits n’ont pas été respectés ou en cas de mauvaise conservation par le Client.**
+**En raison de cette nature, toute réclamation relative à un défaut apparent (produit abîmé, non conforme) doit être formulée au plus tard dans les 24 heures suivant la remise ou la livraison, accompagnée si possible de photographies. Aucune réclamation ne pourra être prise en compte si les conseils d’entretien remis avec les produits n’ont pas été respectés ou en cas de mauvaise conservation par le Client.**
 
 **Article 11 — Réclamations et service client**
 
@@ -166,7 +167,7 @@ L’activité du Vendeur portant exclusivement sur des produits périssables et 
 
 **Le médiateur de la consommation dont relève le Vendeur est :**
 
-**_[Nom du médiateur — adresse postale — site internet. Le Vendeur doit adhérer à un dispositif de médiation et indiquer ses coordonnées ici et sur tout support contractuel (devis, factures).] CM2C_**
+**_Nom du médiateur — adresse postale — site internet. Le Vendeur doit adhérer à un dispositif de médiation et indiquer ses coordonnées ici et sur tout support contractuel (devis, factures). CM2C_**
 
 **Article 16 — Droit applicable et litiges**
 
