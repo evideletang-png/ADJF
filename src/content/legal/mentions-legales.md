@@ -3,14 +3,12 @@ title: Mentions légales
 description: Mentions légales de L'atelier des jours fleuris.
 ---
 
-**À compléter avec les informations réelles de l'entreprise avant la mise en ligne définitive, puis supprimer cet avertissement.**
-
 ## Éditeur du site
 
 L'atelier des jours fleuris
-Statut juridique : à compléter (ex. micro-entreprise)
-Adresse : à compléter
-SIRET : à compléter
+Statut juridique : micro-entreprise 
+Adresse : 41 chemin de la bataille, 41400 Pontlevoy
+SIRET : 98984081400010
 Email : contact (arobase) atelierjf.fr
 
 ## Responsable de la publication
