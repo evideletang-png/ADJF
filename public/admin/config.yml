@@ -6,12 +6,9 @@ backend:
   name: github
   repo: evideletang-png/ADJF
   branch: main
-  # Connexion « Se connecter avec GitHub » (e-mail + mot de passe + 2FA), via le
-  # relais PHP hébergé sur OVH (public/admin/oauth). Décommentez la ligne
-  # ci-dessous UNIQUEMENT après avoir créé l'app OAuth GitHub et ajouté les
-  # secrets GH_OAUTH_CLIENT_ID / GH_OAUTH_CLIENT_SECRET (voir OAUTH-SETUP.md).
-  # Tant qu'elle est commentée, la connexion par jeton (PAT) reste active.
-  # base_url: https://www.atelierjf.fr/admin/oauth
+  # Connexion « Se connecter avec GitHub » (e-mail + mot de passe + 2FA) via le
+  # relais OAuth PHP hébergé sur OVH (public/admin/oauth).
+  base_url: https://www.atelierjf.fr/admin/oauth
 
 # Adresse publique du site (liens « Voir le site »)
 site_url: https://www.atelierjf.fr
