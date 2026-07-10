@@ -3,7 +3,7 @@ title: Politique de confidentialité
 description: Politique de confidentialité et gestion des données personnelles de L'atelier des jours fleuris.
 ---
 
-> À adapter selon vos usages réels avant la mise en ligne, puis supprimer cet avertissement.
+**À adapter selon vos usages réels avant la mise en ligne, puis supprimer cet avertissement.**
 
 ## Données collectées
 
