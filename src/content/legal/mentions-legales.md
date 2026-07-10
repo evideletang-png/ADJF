@@ -3,7 +3,7 @@ title: Mentions légales
 description: Mentions légales de L'atelier des jours fleuris.
 ---
 
-> ⚠︎ À compléter avec les informations réelles de l'entreprise avant la mise en ligne définitive, puis supprimer cet avertissement.
+> À compléter avec les informations réelles de l'entreprise avant la mise en ligne définitive, puis supprimer cet avertissement.
 
 ## Éditeur du site
 
