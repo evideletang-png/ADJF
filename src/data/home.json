@@ -1,29 +1,29 @@
 {
   "seo": {
-    "title": "Fleuriste mariage, événementiel & abonnements floraux",
+    "title": "Fleuriste mariage, événementiel & scénographie",
     "description": ""
   },
   "heroSlides": [
     {
-      "image": "",
-      "alt": "Composition florale de mariage sur une table dressée",
-      "variant": "iris"
-    },
-    {
-      "image": "",
-      "alt": "Bouquet de mariée aux teintes de saison",
+      "image": "/media/IMG_9373.jpg",
+      "alt": "Compositions florales de mariage pour sellettes de cérémonie laïque",
       "variant": ""
     },
     {
-      "image": "",
-      "alt": "Scénographie florale pour une réception d'entreprise",
-      "variant": "sky"
+      "image": "/media/0M3A9254.JPEG",
+      "alt": "Scénographie florale pour un shotting inspiration dans un domaine de sologne",
+      "variant": ""
+    },
+    {
+      "image": "/media/vind'honneur-124.jpg",
+      "alt": "Bouquet de mariée pastel",
+      "variant": ""
     }
   ],
   "heroBand": {
     "eyebrow": "Fleuriste événementielle",
-    "title": "Design floral *sur mesure*, sensible & de saison",
-    "copy": "Des compositions pensées autour du lieu, de la lumière et des fleurs du moment — du mariage à l'abonnement."
+    "title": "Design floral sur mesure, sensible & de saison",
+    "copy": "Des compositions pensées autour du lieu, des fleurs du moment et de vos envies."
   },
   "intro": [
     {
@@ -42,7 +42,7 @@
   "prestationsSection": {
     "eyebrow": "Prestations",
     "title": "Des fleurs pour les moments qui comptent",
-    "copy": "Du mariage à l'abonnement d'entreprise, chaque projet commence par une conversation et se termine par des fleurs qui vous ressemblent."
+    "copy": "Chaque projet commence par une conversation et se termine par des fleurs qui vous ressemblent."
   },
   "quote": "Chaque projet commence par une conversation : le lieu, la saison, les couleurs, l'émotion — puis une proposition florale claire.",
   "realisationsSection": {
