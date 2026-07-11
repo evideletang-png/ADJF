@@ -5,18 +5,18 @@
   },
   "heroSlides": [
     {
-      "image": "/media/IMG_9310.JPG",
-      "alt": "Fleurrisement d'une église pour le mariage d'Agathe & Félix",
-      "variant": "sky"
-    },
-    {
       "image": "/media/0M3A9292.jpg",
       "alt": "Scénographie florale pour un shotting inspiration dans un domaine de sologne",
       "variant": ""
     },
     {
-      "image": "",
-      "alt": "Bouquet de mariée pastel",
+      "image": "/media/IMG_9310.JPG",
+      "alt": "Fleurrisement d'une église pour le mariage d'Agathe & Félix",
+      "variant": "sky"
+    },
+    {
+      "image": "/media/vind'honneur-124.jpg",
+      "alt": "Bouquet de mariée aux teintes pastel",
       "variant": ""
     }
   ],
