@@ -5,7 +5,7 @@
   },
   "eyebrow": "Contact",
   "title": "Parlons de votre projet",
-  "lead": "Quelques informations suffisent pour démarrer. Nous revenons vers vous sous 48 h avec une première proposition, sans engagement.",
+  "lead": "Quelques informations suffisent pour démarrer. Nous revenons vers vous sous 48 h pour un premier contact, sans engagement.",
   "infoCard": {
     "title": "En direct",
     "phoneLabel": "Téléphone",
@@ -18,7 +18,7 @@
     "steps": [
       {
         "strong": "Vous racontez.",
-        "copy": "Lieu, date, ambiance, budget indicatif."
+        "copy": "Lieu, date, ambiance, espace à fleurir, budget indicatif."
       },
       {
         "strong": "On propose.",
