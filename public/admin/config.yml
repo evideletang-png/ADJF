@@ -19,6 +19,22 @@ logo_url: https://www.atelierjf.fr/logo.jpg
 media_folder: /public/media
 public_folder: /media
 
+# Nettoyage automatique du nom des photos téléversées.
+# Sans ça, Sveltia garde le nom d'origine : une photo « IMG Été 2024.JPG »
+# reste telle quelle, et l'accent + l'espace + la majuscule cassent son
+# affichage en ligne (adresse invalide, transfert FTP, serveur sensible à la
+# casse) → la photo est bien envoyée mais ne s'affiche pas.
+# Ici, « IMG Été 2024.JPG » devient « img-ete-2024.jpg ».
+media_libraries:
+  all:
+    slugify_filename: true
+
+# Règles appliquées au nettoyage ci-dessus (et aux adresses de pages) :
+# caractères ASCII uniquement, accents retirés (« é » → « e »).
+slug:
+  encoding: ascii
+  clean_accents: true
+
 # Ambiances de couleur réutilisées (quand il n'y a pas de photo)
 _variant_options: &variant_options
   - { label: 'Défaut (dégradé doux)', value: '' }
