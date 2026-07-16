@@ -107,7 +107,8 @@ function emphasize(str: string): string {
   }
   .hero-slides {
     position: relative;
-    min-height: min(76vh, 680px);
+    width: 100%;
+    height: min(76vh, 680px);
     background: var(--surface-2);
     overflow: hidden;
   }
@@ -127,6 +128,7 @@ function emphasize(str: string): string {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
   }
   .hero-photo.placeholder {
     display: flex;
@@ -201,7 +203,11 @@ function emphasize(str: string): string {
 
   @media (max-width: 620px) {
     .hero-slides {
-      min-height: 62vh;
+      /* Sur mobile, on remplace la hauteur en vh (qui « saute » quand la barre
+         d'adresse du navigateur apparaît/disparaît) par une proportion fixe :
+         cadrage stable et un peu plus haut, la composition reste bien visible. */
+      height: auto;
+      aspect-ratio: 4 / 5;
     }
   }
 </style>
